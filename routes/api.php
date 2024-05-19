@@ -5,7 +5,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
-Route::group(["middleware" => "verify.request"], function() {
+Route::group(["middleware" => ["verify.request", "api"]], function() {
 	Route::get("/", function() {
 		return response()->json(["message" => "Welcome to Qlola UMKM Mobile Api"], 200);
 	});
@@ -14,4 +14,8 @@ Route::group(["middleware" => "verify.request"], function() {
 	Route::post("/signup", [AuthController::class, "signup"]);
 	Route::post("/refresh", [AuthController::class, "refresh"]);
 	Route::post("/logout", [AuthController::class, "logout"]);
+
+	Route::group(["prefix" => "outlet", "middleware" => "jwt.verify"], function() {
+		Route::get("/", function() {return "ok";});
+	});
 });
