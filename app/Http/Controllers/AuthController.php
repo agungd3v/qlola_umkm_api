@@ -61,7 +61,7 @@ class AuthController extends Controller
 	public function refresh() {
 		return response()->json([
 			'user' => Auth::user(),
-			'token' => Auth::refresh()
+			'token' => JWTAuth::refresh()
 		]);
 	}
 }
