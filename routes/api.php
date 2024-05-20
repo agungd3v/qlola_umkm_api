@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\OutletController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -16,6 +17,7 @@ Route::group(["middleware" => ["verify.request", "api"]], function() {
 	Route::post("/logout", [AuthController::class, "logout"]);
 
 	Route::group(["prefix" => "outlet", "middleware" => "jwt.verify"], function() {
-		Route::get("/", function() {return "ok";});
+		Route::get("/", [OutletController::class, "listOutlet"]);
+		Route::post("/", [OutletController::class, "addOutlet"]);
 	});
 });

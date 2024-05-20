@@ -28,6 +28,10 @@ class User extends Authenticatable implements JWTSubject
 		'updated_at'
 	];
 
+	public function business() {
+		return $this->hasOne(Business::class, "owner_id");
+	}
+
 	protected $casts = [
 		'email_verified_at' => 'datetime',
 	];
