@@ -2,11 +2,12 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\OutletController;
+use App\Http\Controllers\ProductController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
-Route::group(["middleware" => ["verify.request", "api"]], function() {
+Route::group(["middleware" => ["verify.request"]], function() {
 	Route::get("/", function() {
 		return response()->json(["message" => "Welcome to Qlola UMKM Mobile Api"], 200);
 	});
@@ -16,8 +17,13 @@ Route::group(["middleware" => ["verify.request", "api"]], function() {
 	Route::post("/refresh", [AuthController::class, "refresh"]);
 	Route::post("/logout", [AuthController::class, "logout"]);
 
-	Route::group(["prefix" => "outlet", "middleware" => "jwt.verify"], function() {
+	Route::group(["prefix" => "outlet", "middleware" => ["jwt.verify"]], function() {
 		Route::get("/", [OutletController::class, "listOutlet"]);
 		Route::post("/", [OutletController::class, "addOutlet"]);
+	});
+
+	Route::group(["prefix" => "product", "middleware" => ["jwt.verify"]], function() {
+		Route::get("/", [ProductController::class, "listProduct"]);
+		Route::post("/", [ProductController::class, "addProduct"]);
 	});
 });

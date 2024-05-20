@@ -15,6 +15,7 @@ class User extends Authenticatable implements JWTSubject
 
 	protected $fillable = [
 		'name',
+		'photo',
 		'phone',
 		'email',
 		'password',
@@ -30,6 +31,10 @@ class User extends Authenticatable implements JWTSubject
 
 	public function business() {
 		return $this->hasOne(Business::class, "owner_id");
+	}
+
+	public function employee() {
+		return $this->belongsTo(Business::class, "owner_id");
 	}
 
 	protected $casts = [
