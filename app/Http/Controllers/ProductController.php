@@ -36,13 +36,17 @@ class ProductController extends Controller
 
 			if (!$request->product_name) throw new \Exception("Nama produk tidak boleh kosong");
 			if (!$request->product_price) throw new \Exception("Harga produk tidak boleh kosong");
-			if (!$request->product_favorite) throw new \Exception("Favorit produk tidak boleh kosong");
 			if (!$request->product_image) throw new \Exception("Foto produk tidak boleh kosong");
 			if (!$request->hasFile("product_image")) throw new \Exception("Foto produk tidak valid");
 
+			$image = time() . '.' . $request->product_image->getClientOriginalExtension();
+			$request->file("product_image")->move('products', $image);
+
+			$fileName = "products/" . $image;
+
 			$product = new Product();
 			$product->business_id = $this->user->business->id;
-			$product->product_image = $request->product_image;
+			$product->product_image = $fileName;
 			$product->product_name = $request->product_name;
 			$product->product_price = $request->product_price;
 			$product->product_favorite = $request->product_favorite;
