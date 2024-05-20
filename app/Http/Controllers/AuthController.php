@@ -53,6 +53,7 @@ class AuthController extends Controller
 			$user->save();
 
 			$business = new Business();
+			$business->owner_id = $user->id;
 			$business->business_name = $request->business_name;
 			$business->business_type = $request->business_type;
 			$business->save();
