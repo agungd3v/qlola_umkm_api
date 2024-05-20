@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Business;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
@@ -33,11 +35,14 @@ class AuthController extends Controller
 
 	public function signup(Request $request) {
 		try {
+			DB::beginTransaction();
+
 			if (!$request->name) throw new \Exception("Nama tidak boleh kosong");
 			if (!$request->phone) throw new \Exception("No. Telepon tidak boleh kosong");
 			if (!$request->email) throw new \Exception("Email tidak boleh kosong");
 			if (!$request->password) throw new \Exception("Password tidak boleh kosong");
 			if (strlen($request->password) < 8) throw new \Exception("Minimal panjang password 8 karakter");
+			if (!$request->business_name) throw new \Exception("Nama usaha boleh kosong");
 
 			$user = new User();
 			$user->name = $request->name;
@@ -47,8 +52,15 @@ class AuthController extends Controller
 			$user->password = Hash::make($request->password);
 			$user->save();
 
+			$business = new Business();
+			$business->business_name = $request->business_name;
+			$business->business_type = $request->business_type;
+			$business->save();
+
+			DB::commit();
 			return response()->json(["message" => "Successfully register"]);
 		} catch (\Exception $e) {
+			DB::rollBack();
 			return response()->json(["message" => $e->getMessage()], 400);
 		}
 	}
