@@ -37,8 +37,6 @@ class EmployeeController extends Controller
 
 			if (!$request->name) throw new \Exception("Nama tidak boleh kosong");
 			if (!$request->phone) throw new \Exception("No. Telepon tidak boleh kosong");
-			if (!$request->password) throw new \Exception("Password tidak boleh kosong");
-			if (strlen($request->password) < 8) throw new \Exception("Minimal panjang password 8 karakter");
 			if (!$request->photo) throw new \Exception("Photo tidak boleh kosong");
 			if (!$request->hasFile("photo")) throw new \Exception("Foto karyawan tidak valid");
 
@@ -53,7 +51,7 @@ class EmployeeController extends Controller
 			$user->phone = $request->phone;
 			$user->email = time() . "@indonesia.id";
 			$user->email_verified_at = Carbon::now();
-			$user->password = Hash::make($request->password);
+			$user->password = Hash::make("12345678");
 			$user->role = "karyawan";
 			$user->save();
 
