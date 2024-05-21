@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Outlet;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -43,6 +44,20 @@ class OutletController extends Controller
 			return response()->json(["message" => "Outlet created"]);
 		} catch (\Exception $e) {
 			DB::rollBack();
+			return response()->json(["message" => $e->getMessage()], 400);
+		}
+	}
+
+	public function getOutletProduct() {
+		$products = Product::orderBy("id", "desc")->get();
+		return response()->json(["data" => $products]);
+	}
+
+	public function listProduct() {
+		try {
+			$product = Product::orderBy("id", "desc")->get();
+			return response()->json(["data" => $product]);
+		} catch (\Exception $e) {
 			return response()->json(["message" => $e->getMessage()], 400);
 		}
 	}

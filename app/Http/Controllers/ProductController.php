@@ -21,8 +21,8 @@ class ProductController extends Controller
 
 	public function listProduct() {
 		try {
-			$outlet = Product::where("business_id", $this->user->business->id)->orderBy("id", "desc")->get();
-			return response()->json(["data" => $outlet]);
+			$product = Product::where("business_id", $this->user->business->id)->orderBy("id", "desc")->get();
+			return response()->json(["data" => $product]);
 		} catch (\Exception $e) {
 			return response()->json(["message" => $e->getMessage()], 400);
 		}
