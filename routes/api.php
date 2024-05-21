@@ -16,7 +16,7 @@ Route::group(["middleware" => ["verify.request"]], function() {
 	Route::post("/signin", [AuthController::class, "signin"]);
 	Route::post("/signup", [AuthController::class, "signup"]);
 	Route::post("/refresh", [AuthController::class, "refresh"]);
-	Route::post("/logout", [AuthController::class, "logout"]);
+	Route::post("/logout", [AuthController::class, "destroy"]);
 
 	Route::group(["prefix" => "outlet", "middleware" => ["jwt.verify"]], function() {
 		Route::get("/", [OutletController::class, "listOutlet"]);
