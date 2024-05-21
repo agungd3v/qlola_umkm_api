@@ -49,11 +49,6 @@ class OutletController extends Controller
 	}
 
 	public function getOutletProduct() {
-		$products = Product::orderBy("id", "desc")->get();
-		return response()->json(["data" => $products]);
-	}
-
-	public function listProduct() {
 		try {
 			$product = Product::orderBy("id", "desc")->get();
 			return response()->json(["data" => $product]);
