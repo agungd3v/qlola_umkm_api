@@ -67,7 +67,7 @@ class AuthController extends Controller
 	}
 
 	public function destroy() {
-		auth()->logout();
+		auth()->invalidate(true);
 		return response()->json(['message' => 'Successfully logged out']);
 	}
 
