@@ -33,10 +33,6 @@ class User extends Authenticatable implements JWTSubject
 		return $this->hasOne(Business::class, "owner_id");
 	}
 
-	public function employees() {
-		return $this->belongsToMany(Business::class, "business_employees", "employee_id", "business_id")->withTimestamps();
-	}
-
 	protected $casts = [
 		'email_verified_at' => 'datetime',
 	];

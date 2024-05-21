@@ -13,7 +13,7 @@ class Business extends Model
 		return $this->hasMany(Product::class, "business_id");
 	}
 
-	// public function employees() {
-	// 	return $this->belongsToMany(User::class, "business_employees", "business_id", "employee_id")->withTimestamps();
-	// }
+	public function employees() {
+		return $this->belongsToMany(User::class, "business_employees", "business_id", "employee_id")->withTimestamps();
+	}
 }

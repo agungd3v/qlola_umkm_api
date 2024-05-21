@@ -22,7 +22,7 @@ class EmployeeController extends Controller
 
 	public function listEmployee() {
 		try {
-			$employee = $this->user->employees()->orderBy("id", "desc")->get();
+			$employee = $this->user->business->employees()->orderBy("id", "desc")->get();
 			return response()->json(["data" => $employee]);
 		} catch (\Exception $e) {
 			return response()->json(["message" => $e->getMessage()], 400);
@@ -55,7 +55,7 @@ class EmployeeController extends Controller
 			$user->role = "karyawan";
 			$user->save();
 
-			$user->employees()->sync([$this->user->business->id]);
+			$user->business->employees()->sync([$this->user->business->id]);
 
 			DB::commit();
 			return response()->json(["message" => "Successfully register"]);
