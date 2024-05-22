@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\OutletController;
 use App\Http\Controllers\ProductController;
+use App\Models\Outlet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +23,8 @@ Route::group(["middleware" => ["verify.request"]], function() {
 		Route::get("/", [OutletController::class, "listOutlet"]);
 		Route::post("/", [OutletController::class, "addOutlet"]);
 		Route::get("/product", [OutletController::class, "getOutletProduct"]);
+		Route::post("add-employee", [OutletController::class, "addEmployee"]);
+		Route::delete("remove-employee", [OutletController::class, "removeEmployee"]);
 	});
 
 	Route::group(["prefix" => "product", "middleware" => ["jwt.verify"]], function() {

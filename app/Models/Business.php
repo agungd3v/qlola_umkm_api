@@ -16,4 +16,8 @@ class Business extends Model
 	public function employees() {
 		return $this->belongsToMany(User::class, "business_employees", "business_id", "employee_id")->withTimestamps();
 	}
+
+	public function outlets() {
+		return $this->hasMany(Outlet::class, "business_id");
+	}
 }

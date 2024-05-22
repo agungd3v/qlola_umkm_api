@@ -15,7 +15,7 @@ class OutletController extends Controller
 
 	public function __construct(Request $request) {
 		$this->middleware(function($request, $next) {
-			$this->user = User::with("business")->where("id", Auth::user()->id)->first();
+			$this->user = User::where("id", Auth::user()->id)->first();
 			return $next($request);
 		});
 	}
@@ -53,6 +53,49 @@ class OutletController extends Controller
 			$product = Product::orderBy("id", "desc")->get();
 			return response()->json(["data" => $product]);
 		} catch (\Exception $e) {
+			return response()->json(["message" => $e->getMessage()], 400);
+		}
+	}
+
+	public function addEmployee(Request $request) {
+		try {
+			DB::beginTransaction();
+
+			$outlet = Outlet::where("id", $request->outlet_id)->first();
+			if (!$outlet) throw new \Exception("Outlet tidak ditemukan");
+
+			$employee = $this->user->business->employees()->where("employee_id", $request->employee_id)->first();
+			if (!$employee) throw new \Exception("Karyawan diluar jangkauan bisnis kamu");
+
+			$outlet->employees()->attach([$employee->id]);
+
+			DB::commit();
+			return response()->json(["message" => "Success"]);
+		} catch (\Throwable $e) {
+			DB::rollBack();
+			return response()->json(["message" => $e->getMessage()], 400);
+		}
+	}
+	
+	public function removeEmployee(Request $request) {
+		try {
+			DB::beginTransaction();
+
+			$outlet = $this->user->business->outlets()->where("id", $request->outlet_id)->first();
+			if (!$outlet) throw new \Exception("Outlet diluar jangkauan bisnis kamu");
+
+			$outlet = $outlet->employees()->where("employee_id", $request->employee_id)->first();
+			if (!$outlet) throw new \Exception("Karyawan tidak berada di outlet ini");
+
+			$ss = DB::table("outlet_employees")
+				->where("outlet_id", $outlet->pivot->outlet_id)
+				->where("employee_id", $outlet->pivot->employee_id)
+				->delete();
+
+			DB::commit();
+			return response()->json(["message" => "Success"]);
+		} catch (\Exception $e) {
+			DB::rollBack();
 			return response()->json(["message" => $e->getMessage()], 400);
 		}
 	}

@@ -45,6 +45,7 @@ class EmployeeController extends Controller
 
 			$fileName = "employees/" . $image;
 
+			
 			$user = new User();
 			$user->name = $request->name;
 			$user->photo = $fileName;
@@ -55,7 +56,7 @@ class EmployeeController extends Controller
 			$user->role = "karyawan";
 			$user->save();
 
-			$user->business->employees()->sync([$this->user->business->id]);
+			$this->user->business->employees()->attach($user->id);
 
 			DB::commit();
 			return response()->json(["message" => "Successfully register"]);
