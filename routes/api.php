@@ -37,5 +37,6 @@ Route::group(["middleware" => ["verify.request"]], function() {
 	Route::group(["prefix" => "employee", "middleware" => ["jwt.verify"]], function() {
 		Route::get("/", [EmployeeController::class, "listEmployee"]);
 		Route::post("/", [EmployeeController::class, "addEmployee"]);
+		Route::get("/product", [EmployeeController::class, "getProduct"]);
 	});
 });

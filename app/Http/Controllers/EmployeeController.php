@@ -65,4 +65,16 @@ class EmployeeController extends Controller
 			return response()->json(["message" => $e->getMessage()], 400);
 		}
 	}
+
+	public function getProduct() {
+		try {
+			$outlet = $this->user->outlets;
+			if (count($outlet) < 1) throw new \Exception("Kamu belum di tempatkan di outlet manapun");
+
+			$outlet = $outlet[0]->products;
+			return response()->json(["data" => $outlet]);
+		} catch (\Exception $e) {
+			return response()->json(["message" => $e->getMessage()], 400);
+		}
+	}
 }

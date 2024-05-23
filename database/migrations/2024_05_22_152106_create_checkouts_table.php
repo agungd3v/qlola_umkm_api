@@ -16,6 +16,7 @@ return new class extends Migration
 		Schema::create('checkouts', function (Blueprint $table) {
 			$table->id();
 			$table->unsignedBigInteger("transaction_id");
+			$table->unsignedBigInteger("outlet_id");
 			$table->unsignedBigInteger("product_id");
 			$table->integer("quantity");
 			$table->double("total");
@@ -23,6 +24,7 @@ return new class extends Migration
 			$table->timestamps();
 
 			$table->foreign("product_id")->references("id")->on("products")->onUpdate("cascade")->onDelete("cascade");
+			$table->foreign("outlet_id")->references("id")->on("outlets")->onUpdate("cascade")->onDelete("cascade");
 			$table->foreign("transaction_id")->references("id")->on("products")->onUpdate("cascade")->onDelete("cascade");
 		});
 	}
