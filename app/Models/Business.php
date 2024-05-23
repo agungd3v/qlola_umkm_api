@@ -20,4 +20,8 @@ class Business extends Model
 	public function outlets() {
 		return $this->hasMany(Outlet::class, "business_id");
 	}
+
+	public function transactions() {
+		return $this->hasMany(Transaction::class, "business_id");
+	}
 }
