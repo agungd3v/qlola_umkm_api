@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\OutletController;
 use App\Http\Controllers\ProductController;
@@ -38,5 +39,9 @@ Route::group(["middleware" => ["verify.request"]], function() {
 		Route::get("/", [EmployeeController::class, "listEmployee"]);
 		Route::post("/", [EmployeeController::class, "addEmployee"]);
 		Route::get("/product", [EmployeeController::class, "getProduct"]);
+	});
+
+	Route::group(["prefix" => "order", "middleware" => ["jwt.verify"]], function() {
+		Route::post("/transaction", [CheckoutController::class, "transaction"]);
 	});
 });
