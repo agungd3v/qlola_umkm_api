@@ -24,6 +24,11 @@ class AuthController extends Controller
 			if (!$sign) throw new \Exception("Password tidak benar");
 
 			$user = Auth::user();
+
+			if ($user->role == "karyawan") {
+				$outlet = User::find(Auth::user()->id)->outlets->first();
+				$user["outlet"] = $outlet;
+			}
 			return response()->json([
 				"user" => $user,
 				"token" => $sign
