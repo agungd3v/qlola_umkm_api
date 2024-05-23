@@ -26,6 +26,7 @@ Route::group(["middleware" => ["verify.request"]], function() {
 		Route::post("add-employee", [OutletController::class, "addEmployee"]);
 		Route::delete("remove-employee", [OutletController::class, "removeEmployee"]);
 		Route::post("add-product", [OutletController::class, "addProduct"]);
+		Route::delete("remove-product", [OutletController::class, "removeProduct"]);
 	});
 
 	Route::group(["prefix" => "product", "middleware" => ["jwt.verify"]], function() {

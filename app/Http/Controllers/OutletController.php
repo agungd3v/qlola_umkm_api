@@ -144,4 +144,27 @@ class OutletController extends Controller
 			return response()->json(["message" => $e->getMessage()], 400);
 		}
 	}
+
+	public function removeProduct(Request $request) {
+		try {
+			DB::beginTransaction();
+
+			$outlet = $this->user->business->outlets()->where("id", $request->outlet_id)->first();
+			if (!$outlet) throw new \Exception("Outlet diluar jangkauan bisnis kamu");
+			
+			$outlet = $outlet->products()->where("product_id", $request->product_id)->first();
+			if (!$outlet) throw new \Exception("Product tidak berada di outlet ini");
+
+			DB::table("outlet_products")
+				->where("outlet_id", $outlet->pivot->outlet_id)
+				->where("product_id", $outlet->pivot->product_id)
+				->delete();
+
+			DB::commit();
+			return response()->json(["message" => "Success"]);
+		} catch (\Exception $e) {
+			DB::rollBack();
+			return response()->json(["message" => $e->getMessage()], 400);
+		}
+	}
 }

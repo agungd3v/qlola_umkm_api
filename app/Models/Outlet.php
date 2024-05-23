@@ -9,12 +9,12 @@ class Outlet extends Model
 {
 	use HasFactory;
 
-	public function products() {
-		return $this->belongsToMany(Product::class, "outlet_products", "outlet_id", "product_id")->withTimestamps();
-	}
-
 	public function business() {
 		return $this->belongsTo(Business::class, "business_id");
+	}
+
+	public function products() {
+		return $this->belongsToMany(Product::class, "outlet_products", "outlet_id", "product_id")->withTimestamps();
 	}
 
 	public function employees() {
