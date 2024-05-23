@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Outlet;
 use App\Models\Product;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -61,13 +62,25 @@ class OutletController extends Controller
 		try {
 			DB::beginTransaction();
 
-			$outlet = Outlet::where("id", $request->outlet_id)->first();
-			if (!$outlet) throw new \Exception("Outlet tidak ditemukan");
+			$outlet = $this->user->business->outlets()->where("id", $request->outlet_id)->first();
+			if (!$outlet) throw new \Exception("Outlet diluar jangkauan bisnis kamu");
 
 			$employee = $this->user->business->employees()->where("employee_id", $request->employee_id)->first();
 			if (!$employee) throw new \Exception("Karyawan diluar jangkauan bisnis kamu");
 
-			$outlet->employees()->attach([$employee->id]);
+			$check = DB::table("outlet_employees")
+				->where("outlet_id", $outlet->id)
+				->where("employee_id", $employee->id)
+				->first();
+
+			if ($check) throw new \Exception("Karyawan sudah berada di outlet ini");
+
+			DB::table("outlet_employees")->insert([
+				"outlet_id" => $outlet->id,
+				"employee_id" => $employee->id,
+				"created_at" => Carbon::now(),
+				"updated_at" => Carbon::now()
+			]);
 
 			DB::commit();
 			return response()->json(["message" => "Success"]);
@@ -87,10 +100,42 @@ class OutletController extends Controller
 			$outlet = $outlet->employees()->where("employee_id", $request->employee_id)->first();
 			if (!$outlet) throw new \Exception("Karyawan tidak berada di outlet ini");
 
-			$ss = DB::table("outlet_employees")
+			DB::table("outlet_employees")
 				->where("outlet_id", $outlet->pivot->outlet_id)
 				->where("employee_id", $outlet->pivot->employee_id)
 				->delete();
+
+			DB::commit();
+			return response()->json(["message" => "Success"]);
+		} catch (\Exception $e) {
+			DB::rollBack();
+			return response()->json(["message" => $e->getMessage()], 400);
+		}
+	}
+
+	public function addProduct(Request $request) {
+		try {
+			DB::beginTransaction();
+
+			$outlet = $this->user->business->outlets()->where("id", $request->outlet_id)->first();
+			if (!$outlet) throw new \Exception("Outlet diluar jangkauan bisnis kamu");
+
+			$product = $this->user->business->products()->where("id", $request->product_id)->first();
+			if (!$product) throw new \Exception("Produk diluar jangkauan bisnis kamu");
+
+			$check = DB::table("outlet_products")
+				->where("outlet_id", $outlet->id)
+				->where("product_id", $product->id)
+				->first();
+
+			if ($check) throw new \Exception("Produk sudah tersedia di outlet ini");
+
+			DB::table("outlet_products")->insert([
+				"outlet_id" => $outlet->id,
+				"product_id" => $product->id,
+				"created_at" => Carbon::now(),
+				"updated_at" => Carbon::now()
+			]);
 
 			DB::commit();
 			return response()->json(["message" => "Success"]);

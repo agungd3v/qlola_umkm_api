@@ -13,6 +13,10 @@ class Outlet extends Model
 		return $this->belongsToMany(Product::class, "outlet_products", "outlet_id", "product_id")->withTimestamps();
 	}
 
+	public function business() {
+		return $this->belongsTo(Business::class, "business_id");
+	}
+
 	public function employees() {
 		return $this->belongsToMany(User::class, "outlet_employees", "outlet_id", "employee_id")->withTimestamps();
 	}
