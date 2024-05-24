@@ -48,5 +48,6 @@ Route::group(["middleware" => ["verify.request"]], function() {
 
 	Route::group(["prefix" => "transaction", "middleware" => ["jwt.verify"]], function() {
 		Route::get("/owner", [TransactionController::class, "getOwnerTransaction"]);
+		Route::get("/outlet", [TransactionController::class, "getOutletTransaction"]);
 	});
 });

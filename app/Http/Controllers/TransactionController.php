@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
@@ -35,6 +36,27 @@ class TransactionController extends Controller
 				"transaction_count_today" => $transactionToday->count(),
 				"transaction_nominal_month" => $transactionMonth->sum("grand_total"),
 				"transaction_count_month" => $transactionMonth->count()
+			]);
+		} catch (\Exception $e) {
+			return response()->json(["message" => $e->getMessage()], 400);
+		}
+	}
+
+	public function getOutletTransaction() {
+		try {
+			$userRole = $this->user->role;
+			if ($userRole != "karyawan") throw new \Exception("Tidak ada transaksi");
+
+			$outlet = $this->user->outlets()->first();
+			if (!$outlet) throw new \Exception("Tidak ada transakksi");
+
+			$transaction = Transaction::whereRelation("checkouts", "outlet_id", $outlet->id)
+				->where("business_id", $outlet->business->id)
+				->whereDate("created_at", Carbon::today());
+
+			return response()->json([
+				"transaction_nominal_today" => $transaction->sum("grand_total"),
+				"transaction_count_today" => $transaction->count(),
 			]);
 		} catch (\Exception $e) {
 			return response()->json(["message" => $e->getMessage()], 400);
