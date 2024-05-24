@@ -34,8 +34,10 @@ class TransactionController extends Controller
 			return response()->json([
 				"transaction_nominal_today" => $transactionToday->sum("grand_total"),
 				"transaction_count_today" => $transactionToday->count(),
+				"daily_transactions" => $transactionToday->orderBy("id", "desc")->with("checkouts.product")->get(),
 				"transaction_nominal_month" => $transactionMonth->sum("grand_total"),
-				"transaction_count_month" => $transactionMonth->count()
+				"transaction_count_month" => $transactionMonth->count(),
+				"monthly_transactions" => $transactionMonth->orderBy("id", "desc")->with("checkouts.product")->get()
 			]);
 		} catch (\Exception $e) {
 			return response()->json(["message" => $e->getMessage()], 400);
