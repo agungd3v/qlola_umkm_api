@@ -12,4 +12,8 @@ class Checkout extends Model
 	public function transaction() {
 		return $this->belongsTo(Transaction::class, "transaction_id");
 	}
+
+	public function product() {
+		return $this->hasOne(Product::class, "product_id");
+	}
 }
