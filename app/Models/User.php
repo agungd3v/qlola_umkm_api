@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
+use DateTimeInterface;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -31,7 +32,13 @@ class User extends Authenticatable implements JWTSubject
 
 	protected $casts = [
 		'email_verified_at' => 'datetime',
+		'created_at',
+		'updated_at'
 	];
+
+	protected function serializeDate(DateTimeInterface $date) {
+		return $date->format('Y-m-d H:i:s');
+	}
 
 	public function business() {
 		return $this->hasOne(Business::class, "owner_id");

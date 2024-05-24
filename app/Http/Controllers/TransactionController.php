@@ -59,7 +59,7 @@ class TransactionController extends Controller
 			return response()->json([
 				"transaction_nominal_today" => $transaction->sum("grand_total"),
 				"transaction_count_today" => $transaction->count(),
-				"transactions" => $transaction->orderBy("id", "desc")->with("checkouts.product")->get()
+				"transactions" => $transaction->orderBy("id", "desc")->with("checkouts.product")->toArray()
 			]);
 		} catch (\Exception $e) {
 			return response()->json(["message" => $e->getMessage()], 400);
