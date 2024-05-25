@@ -60,7 +60,7 @@ class OutletController extends Controller
 			}
 
 			if ($this->user->role == "karyawan") {
-				$outlet = $this->user->outlets()->where("id", $outlet_id)->first();
+				$outlet = $this->user->outlets()->where("outlet_id", $outlet_id)->first();
 			}
 
 			$outlet = $outlet->products;
