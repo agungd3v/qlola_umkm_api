@@ -72,7 +72,7 @@ class AuthController extends Controller
 	}
 
 	public function destroy() {
-		auth()->invalidate(true);
+		auth()->logout(true);
 		return response()->json(['message' => 'Successfully logged out']);
 	}
 
@@ -81,5 +81,14 @@ class AuthController extends Controller
 			'user' => Auth::user(),
 			'token' => JWTAuth::refresh()
 		]);
+	}
+
+	public function check() {
+		try {
+			$user = auth()->user();
+			return response()->json(["message" => "Validate user Success"]);
+		} catch (\PHPOpenSourceSaver\JWTAuth\Exceptions\UserNotDefinedException $e) {
+			return response()->json(["message" => "Validate user Failed"], 401);
+		}
 	}
 }

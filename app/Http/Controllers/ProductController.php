@@ -29,20 +29,21 @@ class ProductController extends Controller
 	}
 
 	public function addProduct(Request $request) {
-		$fileName = "";
+		$fileName = null;
 
 		try {
 			DB::beginTransaction();
 
 			if (!$request->product_name) throw new \Exception("Nama produk tidak boleh kosong");
 			if (!$request->product_price) throw new \Exception("Harga produk tidak boleh kosong");
-			if (!$request->product_image) throw new \Exception("Foto produk tidak boleh kosong");
-			if (!$request->hasFile("product_image")) throw new \Exception("Foto produk tidak valid");
 
-			$image = time() . '.' . $request->product_image->getClientOriginalExtension();
-			$request->file("product_image")->move('products', $image);
+			if ($request->product_image) {
+				if (!$request->hasFile("product_image")) throw new \Exception("Foto produk tidak valid");
+				$image = time() . '.' . $request->product_image->getClientOriginalExtension();
+				$request->file("product_image")->move('products', $image);
 
-			$fileName = "products/" . $image;
+				$fileName = "products/" . $image;
+			}
 
 			$product = new Product();
 			$product->business_id = $this->user->business->id;

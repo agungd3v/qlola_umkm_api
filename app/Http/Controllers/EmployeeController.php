@@ -30,7 +30,7 @@ class EmployeeController extends Controller
 	}
 
 	public function addEmployee(Request $request) {
-		$fileName = "";
+		$fileName = null;
 
 		try {
 			DB::beginTransaction();
@@ -38,12 +38,14 @@ class EmployeeController extends Controller
 			if (!$request->name) throw new \Exception("Nama tidak boleh kosong");
 			if (!$request->phone) throw new \Exception("No. Telepon tidak boleh kosong");
 			if (!$request->photo) throw new \Exception("Photo tidak boleh kosong");
-			if (!$request->hasFile("photo")) throw new \Exception("Foto karyawan tidak valid");
 
-			$image = time() . '.' . $request->photo->getClientOriginalExtension();
-			$request->file("photo")->move('employees', $image);
+			if ($request->photo) {
+				if (!$request->hasFile("photo")) throw new \Exception("Foto karyawan tidak valid");
+				$image = time() . '.' . $request->photo->getClientOriginalExtension();
+				$request->file("photo")->move('employees', $image);
 
-			$fileName = "employees/" . $image;
+				$fileName = "employees/" . $image;
+			}
 
 			
 			$user = new User();

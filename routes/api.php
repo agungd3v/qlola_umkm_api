@@ -6,8 +6,6 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\OutletController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\TransactionController;
-use App\Models\Outlet;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 
@@ -20,6 +18,7 @@ Route::group(["middleware" => ["verify.request"]], function() {
 	Route::post("/signup", [AuthController::class, "signup"]);
 	Route::post("/refresh", [AuthController::class, "refresh"]);
 	Route::post("/logout", [AuthController::class, "destroy"]);
+	Route::get("/check", [AuthController::class, "check"])->middleware("jwt.verify");
 
 	Route::group(["prefix" => "outlet", "middleware" => ["jwt.verify"]], function() {
 		Route::get("/", [OutletController::class, "listOutlet"]);

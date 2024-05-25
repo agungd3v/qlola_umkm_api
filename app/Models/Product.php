@@ -13,8 +13,7 @@ class Product extends Model
 
 	protected $casts = [
 		'created_at',
-		'updated_at',
-		'deleted_at'
+		'updated_at'
 	];
 
 	protected function serializeDate(DateTimeInterface $date) {
