@@ -58,6 +58,16 @@ class OutletController extends Controller
 		}
 	}
 
+	public function getAvailEmployee() {
+		try {
+			$employee = $this->user->business->employees()->doesnthave("outlets")->get();
+
+			return response()->json(["data" => $employee]);
+		} catch (\Exception $e) {
+			return response()->json(["message" => $e->getMessage()], 400);
+		}
+	}
+
 	public function getOutleEmployee(Request $request, $outlet_id) {
 		try {
 			$outlet = $this->user->business->outlets()->where("id", $outlet_id)->first();
