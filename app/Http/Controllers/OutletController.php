@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 class OutletController extends Controller
 {
 	public $user;
+	public $outlet_id;
 
 	public function __construct(Request $request) {
 		$this->middleware(function($request, $next) {
@@ -187,7 +188,11 @@ class OutletController extends Controller
 
 	public function getAvailProduct(Request $request) {
 		try {
-			$product = $this->user->business->products()->whereRelation("outlets", "outlet_id", "!=", $request->outlet_id)->get();
+			$this->outlet_id = $request->outlet_id;
+
+			$product = $this->user->business->products()->whereDoesntHave("outlets", function($query) {
+				$query->where("outlet_id", $this->outlet_id);
+			})->get();
 
 			return response()->json(["data" => $product]);
 		} catch (\Exception $e) {
