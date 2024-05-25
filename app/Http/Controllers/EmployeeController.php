@@ -37,7 +37,6 @@ class EmployeeController extends Controller
 
 			if (!$request->name) throw new \Exception("Nama tidak boleh kosong");
 			if (!$request->phone) throw new \Exception("No. Telepon tidak boleh kosong");
-			if (!$request->photo) throw new \Exception("Photo tidak boleh kosong");
 
 			if ($request->photo) {
 				if (!$request->hasFile("photo")) throw new \Exception("Foto karyawan tidak valid");
