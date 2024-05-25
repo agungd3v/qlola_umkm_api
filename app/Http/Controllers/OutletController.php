@@ -90,11 +90,11 @@ class OutletController extends Controller
 			$outlet = $this->user->business->outlets()->where("id", $request->outlet_id)->first();
 			if (!$outlet) throw new \Exception("Outlet diluar jangkauan bisnis kamu");
 
-			$requestEmployees = count($request->employees);
-			if ($requestEmployees < 1) throw new \Exception("Minimal harus memiliki 1 karyawan terdaftar");
+			// $requestEmployees = count($request->employees);
+			// if ($requestEmployees < 1) throw new \Exception("Minimal harus memiliki 1 karyawan terdaftar");
 
 			$employees = [];
-			for ($i = 0; $i < $requestEmployees; $i++) { 
+			for ($i = 0; $i < count($request->employees); $i++) { 
 				$employee = $this->user->business->employees()->where("employee_id", $request->employees[$i]["id"])->first();
 				if (!$employee) throw new \Exception("Karyawan diluar jangkauan bisnis kamu");
 
@@ -141,11 +141,11 @@ class OutletController extends Controller
 			$outlet = $this->user->business->outlets()->where("id", $request->outlet_id)->first();
 			if (!$outlet) throw new \Exception("Outlet diluar jangkauan bisnis kamu");
 
-			$requestProducts = count($request->products);
-			if ($requestProducts < 1) throw new \Exception("Minimal harus memiliki 1 product terdaftar");
+			// $requestProducts = count($request->products);
+			// if ($requestProducts < 1) throw new \Exception("Minimal harus memiliki 1 product terdaftar");
 
 			$products = [];
-			for ($i = 0; $i < $requestProducts; $i++) { 
+			for ($i = 0; $i < count($request->products); $i++) { 
 				$product = $this->user->business->products()->where("id", $request->products[$i]["id"])->first();
 				if (!$product) throw new \Exception("Produk diluar jangkauan bisnis kamu");
 
