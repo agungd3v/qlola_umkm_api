@@ -49,10 +49,13 @@ class OutletController extends Controller
 		}
 	}
 
-	public function getOutletProduct() {
+	public function getOutletProduct(Request $request, $outlet_id) {
 		try {
-			$product = Product::orderBy("id", "desc")->get();
-			return response()->json(["data" => $product]);
+			$outlet = $this->user->business->outlets()->where("id", $outlet_id)->first();
+			if (!$outlet) throw new \Exception("Outlet diluar jangkauan bisnis kamu");
+
+			$outlet = $outlet->products;
+			return response()->json(["data" => $outlet]);
 		} catch (\Exception $e) {
 			return response()->json(["message" => $e->getMessage()], 400);
 		}

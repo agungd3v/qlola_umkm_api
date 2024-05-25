@@ -24,11 +24,11 @@ Route::group(["middleware" => ["verify.request"]], function() {
 	Route::group(["prefix" => "outlet", "middleware" => ["jwt.verify"]], function() {
 		Route::get("/", [OutletController::class, "listOutlet"]);
 		Route::post("/", [OutletController::class, "addOutlet"]);
-		Route::get("/product", [OutletController::class, "getOutletProduct"]);
 		Route::get("/employees", [OutletController::class, "getAvailEmployee"]);
 		Route::get("/employees/{outlet_id}", [OutletController::class, "getOutleEmployee"]);
 		Route::post("add-employee", [OutletController::class, "addEmployee"]);
 		Route::delete("remove-employee", [OutletController::class, "removeEmployee"]);
+		Route::get("/products/{outlet_id}", [OutletController::class, "getOutletProduct"]);
 		Route::post("add-product", [OutletController::class, "addProduct"]);
 		Route::delete("remove-product", [OutletController::class, "removeProduct"]);
 	});
