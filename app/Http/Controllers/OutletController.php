@@ -141,26 +141,22 @@ class OutletController extends Controller
 			$outlet = $this->user->business->outlets()->where("id", $request->outlet_id)->first();
 			if (!$outlet) throw new \Exception("Outlet diluar jangkauan bisnis kamu");
 
-			$product = $this->user->business->products()->where("id", $request->product_id)->first();
-			if (!$product) throw new \Exception("Produk diluar jangkauan bisnis kamu");
+			$requestProducts = count($request->products);
+			if ($requestProducts < 1) throw new \Exception("Minimal harus memiliki 1 product terdaftar");
 
-			$check = DB::table("outlet_products")
-				->where("outlet_id", $outlet->id)
-				->where("product_id", $product->id)
-				->first();
+			$products = [];
+			for ($i = 0; $i < $requestProducts; $i++) { 
+				$product = $this->user->business->products()->where("id", $request->products[$i]["id"])->first();
+				if (!$product) throw new \Exception("Produk diluar jangkauan bisnis kamu");
 
-			if ($check) throw new \Exception("Produk sudah tersedia di outlet ini");
+				$products[] = $product->id;
+			}
 
-			DB::table("outlet_products")->insert([
-				"outlet_id" => $outlet->id,
-				"product_id" => $product->id,
-				"created_at" => Carbon::now(),
-				"updated_at" => Carbon::now()
-			]);
+			$outlet->products()->sync($products);
 
 			DB::commit();
 			return response()->json(["message" => "Success"]);
-		} catch (\Exception $e) {
+		} catch (\Throwable $e) {
 			DB::rollBack();
 			return response()->json(["message" => $e->getMessage()], 400);
 		}
