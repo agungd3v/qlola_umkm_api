@@ -87,22 +87,18 @@ class OutletController extends Controller
 			$outlet = $this->user->business->outlets()->where("id", $request->outlet_id)->first();
 			if (!$outlet) throw new \Exception("Outlet diluar jangkauan bisnis kamu");
 
-			$employee = $this->user->business->employees()->where("employee_id", $request->employee_id)->first();
-			if (!$employee) throw new \Exception("Karyawan diluar jangkauan bisnis kamu");
+			$requestEmployees = count($request->employees);
+			if ($requestEmployees < 1) throw new \Exception("Minimal harus memiliki 1 karyawan terdaftar");
 
-			$check = DB::table("outlet_employees")
-				->where("outlet_id", $outlet->id)
-				->where("employee_id", $employee->id)
-				->first();
+			$employees = [];
+			for ($i = 0; $i < $requestEmployees; $i++) { 
+				$employee = $this->user->business->employees()->where("employee_id", $request->employees[$i]["id"])->first();
+				if (!$employee) throw new \Exception("Karyawan diluar jangkauan bisnis kamu");
 
-			if ($check) throw new \Exception("Karyawan sudah berada di outlet ini");
+				$employees[] = $employee->id;
+			}
 
-			DB::table("outlet_employees")->insert([
-				"outlet_id" => $outlet->id,
-				"employee_id" => $employee->id,
-				"created_at" => Carbon::now(),
-				"updated_at" => Carbon::now()
-			]);
+			$outlet->employees()->sync($employees);
 
 			DB::commit();
 			return response()->json(["message" => "Success"]);
