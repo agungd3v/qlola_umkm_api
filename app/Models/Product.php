@@ -9,7 +9,7 @@ use DateTimeInterface;
 
 class Product extends Model
 {
-	use HasFactory, SoftDeletes;
+	use HasFactory;
 
 	protected $casts = [
 		'created_at',
