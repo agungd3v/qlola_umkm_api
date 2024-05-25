@@ -184,4 +184,14 @@ class OutletController extends Controller
 			return response()->json(["message" => $e->getMessage()], 400);
 		}
 	}
+
+	public function getAvailProduct(Request $request) {
+		try {
+			$product = $this->user->business->products()->whereRelation("outlets", "outlet_id", "!=", $request->outlet_id)->get();
+
+			return response()->json(["data" => $product]);
+		} catch (\Exception $e) {
+			return response()->json(["message" => $e->getMessage()], 400);
+		}
+	}
 }
