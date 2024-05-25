@@ -52,8 +52,16 @@ class OutletController extends Controller
 
 	public function getOutletProduct(Request $request, $outlet_id) {
 		try {
-			$outlet = $this->user->business->outlets()->where("id", $outlet_id)->first();
-			if (!$outlet) throw new \Exception("Outlet diluar jangkauan bisnis kamu");
+			$outlet = null;
+
+			if ($this->user->role == "owner") {
+				$outlet = $this->user->business->outlets()->where("id", $outlet_id)->first();
+				if (!$outlet) throw new \Exception("Outlet diluar jangkauan bisnis kamu");
+			}
+
+			if ($this->user->role == "karyawan") {
+				$outlet = $this->user->outlets()->where("id", $outlet_id)->first();
+			}
 
 			$outlet = $outlet->products;
 			return response()->json(["data" => $outlet]);
