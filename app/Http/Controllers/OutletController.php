@@ -58,6 +58,18 @@ class OutletController extends Controller
 		}
 	}
 
+	public function getOutleEmployee(Request $request, $outlet_id) {
+		try {
+			$outlet = $this->user->business->outlets()->where("id", $outlet_id)->first();
+			if (!$outlet) throw new \Exception("Outlet diluar jangkauan bisnis kamu");
+
+			$outlet = $outlet->employees;
+			return response()->json(["data" => $outlet]);
+		} catch (\Exception $e) {
+			return response()->json(["message" => $e->getMessage()], 400);
+		}
+	}
+
 	public function addEmployee(Request $request) {
 		try {
 			DB::beginTransaction();

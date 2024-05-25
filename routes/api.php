@@ -25,6 +25,7 @@ Route::group(["middleware" => ["verify.request"]], function() {
 		Route::get("/", [OutletController::class, "listOutlet"]);
 		Route::post("/", [OutletController::class, "addOutlet"]);
 		Route::get("/product", [OutletController::class, "getOutletProduct"]);
+		Route::get("/employees/{outlet_id}", [OutletController::class, "getOutleEmployee"]);
 		Route::post("add-employee", [OutletController::class, "addEmployee"]);
 		Route::delete("remove-employee", [OutletController::class, "removeEmployee"]);
 		Route::post("add-product", [OutletController::class, "addProduct"]);
