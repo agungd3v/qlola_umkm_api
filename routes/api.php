@@ -5,6 +5,7 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\OutletController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TransactionController;
 use Illuminate\Support\Facades\Route;
 
@@ -51,5 +52,9 @@ Route::group(["middleware" => ["verify.request"]], function() {
 	Route::group(["prefix" => "transaction", "middleware" => ["jwt.verify"]], function() {
 		Route::get("/owner", [TransactionController::class, "getOwnerTransaction"]);
 		Route::get("/outlet", [TransactionController::class, "getOutletTransaction"]);
+	});
+
+	Route::group(["prefix" => "report", "middleware" => ["jwt.verify"]], function() {
+		Route::post("quick", [ReportController::class, "getQuickReport"]);
 	});
 });
