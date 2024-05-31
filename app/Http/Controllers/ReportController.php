@@ -22,8 +22,8 @@ class ReportController extends Controller
 
 	public function getQuickReport(Request $request) {
 		try {
-			$from = explode(" - ", $request->date)[1];
-			$to = explode(" - ", $request->date)[0];
+			$from = explode(" - ", $request->date)[0];
+			$to = explode(" - ", $request->date)[1];
 
 			if ($request->outlet == null) {
 				$transaction = Transaction::with("checkouts")
