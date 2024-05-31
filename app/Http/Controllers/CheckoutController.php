@@ -51,7 +51,7 @@ class CheckoutController extends Controller
 			}
 
 			DB::commit();
-			return response()->json(["message" => "Transaction successfully"]);
+			return response()->json(["message" => $transaction->transaction_code]);
 		} catch (\Exception $e) {
 			DB::rollBack();
 			return response()->json(["message" => $e->getMessage()], 400);
