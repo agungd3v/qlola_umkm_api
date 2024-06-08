@@ -26,7 +26,7 @@ class AuthController extends Controller
 			$user = Auth::user();
 
 			if ($user->role == "karyawan") {
-				$outlet = User::find(Auth::user()->id)->outlets()->with("business")->first();
+				$outlet = User::find(Auth::user()->id)->outlets()->with("business", "products")->first();
 				$user["outlet"] = $outlet;
 			}
 			return response()->json([
