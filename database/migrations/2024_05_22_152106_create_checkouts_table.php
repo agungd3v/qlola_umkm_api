@@ -23,9 +23,9 @@ return new class extends Migration
 			$table->string("status")->default("paid");
 			$table->timestamps();
 
+			$table->foreign("transaction_id")->references("id")->on("transactions")->onUpdate("cascade")->onDelete("cascade");
 			$table->foreign("product_id")->references("id")->on("products")->onUpdate("cascade")->onDelete("cascade");
 			$table->foreign("outlet_id")->references("id")->on("outlets")->onUpdate("cascade")->onDelete("cascade");
-			$table->foreign("transaction_id")->references("id")->on("transactions")->onUpdate("cascade")->onDelete("cascade");
 		});
 	}
 

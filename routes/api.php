@@ -47,6 +47,7 @@ Route::group(["middleware" => ["verify.request"]], function() {
 
 	Route::group(["prefix" => "order", "middleware" => ["jwt.verify"]], function() {
 		Route::post("/transaction", [CheckoutController::class, "transaction"]);
+		Route::post("/transaction/bulk", [CheckoutController::class, "transactionBulk"]);
 	});
 
 	Route::group(["prefix" => "transaction", "middleware" => ["jwt.verify"]], function() {

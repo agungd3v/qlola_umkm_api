@@ -57,4 +57,46 @@ class CheckoutController extends Controller
 			return response()->json(["message" => $e->getMessage()], 400);
 		}
 	}
+
+	public function transactionBulk(Request $request) {
+		try {
+			DB::beginTransaction();
+
+			$total = 0;
+
+			foreach ($request->data as $key => $data) {
+				$transaction = new Transaction();
+				$transaction->transaction_code = "TGA-". time() . rand(10, 99);
+				$transaction->business_id = $request->business_id;
+				$transaction->grand_total = 0;
+				$transaction->save();
+
+				foreach ($data as $key2 => $item) {
+					$checkout = new Checkout();
+					$checkout->transaction_id = $transaction->id;
+					$checkout->outlet_id = $item["_outletid"];
+					$checkout->product_id = $item["_productid"];
+					$checkout->quantity = $item["_quantity"];
+					$checkout->total = $item["_total"];
+					$checkout->status = "paid";
+					$checkout->created_at = $item["_createdat"];
+					$checkout->updated_at = $item["_updatedat"];
+					$checkout->save();
+
+					$total += $checkout->total;
+				}
+
+				$transaction = $total;
+				$transaction->save();
+
+				$total = 0;
+			}
+			
+			DB::commit();
+			return response()->json(["message" => "Berhasil menyinkronkan data dengan server"]);
+		} catch (\Exception $e) {
+			DB::rollBack();
+			return response()->json(["message" => $e->getMessage()], 400);
+		}
+	}
 }
