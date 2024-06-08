@@ -86,7 +86,7 @@ class CheckoutController extends Controller
 					$total += $checkout->total;
 				}
 
-				$transaction = $total;
+				$transaction->grand_total = $total;
 				$transaction->save();
 
 				$total = 0;
