@@ -59,7 +59,8 @@ class ReportController extends Controller
 				"data" => [
 					"sales" => $transaction->sum("grand_total"),
 					"count" => $transaction->count(),
-					"product_sales" => $transaction->sum("product_sales")
+					"product_sales" => $transaction->sum("product_sales"),
+					"transactions" => $transaction
 				]
 			]);
 		} catch (\Exception $e) {
