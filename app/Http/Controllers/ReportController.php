@@ -26,7 +26,7 @@ class ReportController extends Controller
 			$to = explode(" - ", $request->date)[1];
 
 			if ($request->outlet == null) {
-				$transaction = Transaction::with("checkouts")
+				$transaction = Transaction::with("checkouts", "checkouts.product")
 					->where("business_id", $this->user->business->id)
 					->whereBetween("created_at", [$from, $to])
 					->withCount([
@@ -41,7 +41,7 @@ class ReportController extends Controller
 
 				$this->outlet_id = $transaction->id;
 
-				$transaction = Transaction::with("checkouts")
+				$transaction = Transaction::with("checkouts", "checkouts.product")
 					->where("business_id", $this->user->business->id)
 					->whereHas("checkouts", function($query) {
 						$query->where("outlet_id", $this->outlet_id);
