@@ -15,11 +15,16 @@ Route::group(["middleware" => ["verify.request"]], function() {
 		return response()->json(["message" => "Welcome to Qlola UMKM Mobile Api"], 200);
 	});
 
+	Route::get("/test", function() {
+		return auth()->user()->id;
+	})->middleware("jwt.verify");
+
 	Route::post("/signin", [AuthController::class, "signin"]);
 	Route::post("/signup", [AuthController::class, "signup"]);
 	Route::post("/refresh", [AuthController::class, "refresh"]);
 	Route::post("/logout", [AuthController::class, "destroy"]);
 	Route::get("/check", [AuthController::class, "check"])->middleware("jwt.verify");
+
 
 	Route::group(["prefix" => "outlet", "middleware" => ["jwt.verify"]], function() {
 		Route::get("/", [OutletController::class, "listOutlet"]);
