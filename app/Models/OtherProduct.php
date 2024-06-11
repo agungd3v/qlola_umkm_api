@@ -7,5 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class OtherProduct extends Model
 {
-    use HasFactory;
+	use HasFactory;
+
+	public function transaction() {
+		return $this->belongsTo(Transaction::class, "transaction_id");
+	}
 }

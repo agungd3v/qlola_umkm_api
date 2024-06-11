@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Checkout;
+use App\Models\OtherProduct;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -66,24 +67,40 @@ class CheckoutController extends Controller
 
 			foreach ($request->data as $key => $data) {
 				$transaction = new Transaction();
-				$transaction->transaction_code = "TGA-". auth()->user()->id . time() . rand(10, 99) . $key;
+				$transaction->transaction_code = "TGA-". auth()->user()->id . (time() . rand(10, 99)) + explode("_", $key)[1] * 2;
 				$transaction->business_id = $request->business_id;
 				$transaction->grand_total = 0;
 				$transaction->save();
 
 				foreach ($data as $key2 => $item) {
-					$checkout = new Checkout();
-					$checkout->transaction_id = $transaction->id;
-					$checkout->outlet_id = $item["_outletid"];
-					$checkout->product_id = $item["_productid"];
-					$checkout->quantity = $item["_quantity"];
-					$checkout->total = $item["_total"];
-					$checkout->status = "paid";
-					$checkout->created_at = $item["_createdat"];
-					$checkout->updated_at = $item["_updatedat"];
-					$checkout->save();
+					if ($item["_other"] == true) {
+						$other = new OtherProduct();
+						$other->transaction_id = $transaction->id;
+						$other->outlet_id = $item["_outletid"];
+						$other->product_name = $item["_productname"];
+						$other->product_price = $item["_productprice"];
+						$other->quantity = $item["_quantity"];
+						$other->total = $item["_total"];
+						$other->status = "paid";
+						$other->created_at = $item["_createdat"];
+						$other->updated_at = $item["_updatedat"];
+						$other->save();
 
-					$total += $checkout->total;
+						$total += $other->total;
+					} else {
+						$checkout = new Checkout();
+						$checkout->transaction_id = $transaction->id;
+						$checkout->outlet_id = $item["_outletid"];
+						$checkout->product_id = $item["_productid"];
+						$checkout->quantity = $item["_quantity"];
+						$checkout->total = $item["_total"];
+						$checkout->status = "paid";
+						$checkout->created_at = $item["_createdat"];
+						$checkout->updated_at = $item["_updatedat"];
+						$checkout->save();
+
+						$total += $checkout->total;
+					}
 				}
 
 				$transaction->grand_total = $total;

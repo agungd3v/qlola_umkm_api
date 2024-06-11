@@ -22,4 +22,8 @@ class Transaction extends Model
 	public function checkouts() {
 		return $this->hasMany(Checkout::class, "transaction_id");
 	}
+
+	public function others() {
+		return $this->hasMany(OtherProduct::class, "transaction_id");
+	}
 }
