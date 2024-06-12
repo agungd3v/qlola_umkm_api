@@ -26,11 +26,16 @@ class ReportController extends Controller
 			$to = explode(" - ", $request->date)[1];
 
 			if ($request->outlet == null) {
-				$transaction = Transaction::with("checkouts", "checkouts.product")
+				$transaction = Transaction::with("checkouts", "checkouts.product", "others")
 					->where("business_id", $this->user->business->id)
 					->whereBetween("created_at", [$from, $to])
 					->withCount([
 						"checkouts as product_sales" => function($query) {
+							$query->select(DB::raw("SUM(quantity) as quantity"))->where("status", "paid");
+						}
+					])
+					->withCount([
+						"others as product_other_sales" => function($query) {
 							$query->select(DB::raw("SUM(quantity) as quantity"))->where("status", "paid");
 						}
 					])
@@ -41,7 +46,7 @@ class ReportController extends Controller
 
 				$this->outlet_id = $transaction->id;
 
-				$transaction = Transaction::with("checkouts", "checkouts.product")
+				$transaction = Transaction::with("checkouts", "checkouts.product", "others")
 					->where("business_id", $this->user->business->id)
 					->whereHas("checkouts", function($query) {
 						$query->where("outlet_id", $this->outlet_id);
@@ -49,6 +54,11 @@ class ReportController extends Controller
 					->whereBetween("created_at", [$from, $to])
 					->withCount([
 						"checkouts as product_sales" => function($query) {
+							$query->select(DB::raw("SUM(quantity) as quantity"))->where("status", "paid");
+						}
+					])
+					->withCount([
+						"others as product_other_sales" => function($query) {
 							$query->select(DB::raw("SUM(quantity) as quantity"))->where("status", "paid");
 						}
 					])
@@ -60,6 +70,7 @@ class ReportController extends Controller
 					"sales" => $transaction->sum("grand_total"),
 					"count" => $transaction->count(),
 					"product_sales" => $transaction->sum("product_sales"),
+					"product_other_sales" => $transaction->sum("product_other_sales"),
 					"transactions" => $transaction
 				]
 			]);
