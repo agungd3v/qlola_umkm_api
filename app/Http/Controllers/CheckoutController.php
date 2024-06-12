@@ -73,7 +73,7 @@ class CheckoutController extends Controller
 				$transaction->save();
 
 				foreach ($data as $key2 => $item) {
-					if ($item["_other"] == true) {
+					if (isset($item["_other"]) && $item["_other"]) {
 						$other = new OtherProduct();
 						$other->transaction_id = $transaction->id;
 						$other->outlet_id = $item["_outletid"];
