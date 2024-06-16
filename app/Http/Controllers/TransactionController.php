@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class TransactionController extends Controller
 {
@@ -82,6 +83,23 @@ class TransactionController extends Controller
 
 			return response()->json(["data" => $transaction]);
 		} catch (\Exception $e) {
+			return response()->json(["message" => $e->getMessage()], 400);
+		}
+	}
+
+	public function deleteTransaction(Request $request) {
+		try {
+			DB::beginTransaction();
+
+			$transaction = Transaction::where("id", $request->id)->first();
+			if (!$transaction) throw new \Exception("Error, transaction not found!");
+
+			$transaction->delete();
+
+			DB::commit();
+			return response()->json(["message" => "Transaksi berhasil di hapus"]);
+		} catch (\Exception $e) {
+			DB::rollBack();
 			return response()->json(["message" => $e->getMessage()], 400);
 		}
 	}
