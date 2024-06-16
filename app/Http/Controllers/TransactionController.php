@@ -65,4 +65,24 @@ class TransactionController extends Controller
 			return response()->json(["message" => $e->getMessage()], 400);
 		}
 	}
+
+	public function checkTransaction(Request $request) {
+		try {
+			$user = auth()->user();
+			if ($user->role !== "owner") throw new \Exception("Transaksi tidak ditemukan");
+
+			$user = User::where("id", $user->id)->with("business")->first();
+			if (!$user->business) throw new \Exception("Transaksi tidak ditemukan");
+
+			$transaction = Transaction::where("transaction_code", $request->code)
+											->where("business_id", $user->business->id)
+											->with("checkouts", "others")
+											->first();
+			if (!$transaction) throw new \Exception("Transaksi tidak ditemukan");
+
+			return response()->json(["data" => $transaction]);
+		} catch (\Exception $e) {
+			return response()->json(["message" => $e->getMessage()], 400);
+		}
+	}
 }
