@@ -70,6 +70,7 @@ class CheckoutController extends Controller
 				$transaction->transaction_code = "TGA-". auth()->user()->id . (time() . rand(10, 99)) + explode("_", $key)[1] * 2;
 				$transaction->business_id = $request->business_id;
 				$transaction->grand_total = 0;
+				$transaction->created_at = $data[0]["_createdat"];
 				$transaction->save();
 
 				foreach ($data as $key2 => $item) {
