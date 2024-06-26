@@ -54,7 +54,26 @@ class ProductController extends Controller
 			$product->save();
 
 			DB::commit();
-			return response()->json(["message" => "Product created"]);
+			return response()->json(["message" => "Produk created"]);
+		} catch (\Exception $e) {
+			DB::rollBack();
+			return response()->json(["message" => $e->getMessage()], 400);
+		}
+	}
+
+	public function updateProduct(Request $request) {
+		try {
+			DB::beginTransaction();
+
+			$product = Product::where("id", (int) $request->id)->first();
+			if (!$product) throw new \Exception("Error, produk tidak ditemukan");
+
+			$product->product_name = $request->product_name;
+			$product->product_price = $request->product_price;
+			$product->save();
+
+			DB::commit();
+			return response()->json(["message" => "Produk updated"]);
 		} catch (\Exception $e) {
 			DB::rollBack();
 			return response()->json(["message" => $e->getMessage()], 400);
