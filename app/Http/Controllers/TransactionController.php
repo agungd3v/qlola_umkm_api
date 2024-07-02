@@ -120,6 +120,10 @@ class TransactionController extends Controller
 
 			$item->delete();
 
+			if ($transaction->grand_total < 1) {
+				$transaction->delete();
+			}
+
 			DB::commit();
 			return response()->json(["message" => "Item berhasil dihapus!"]);
 		} catch (\Exception $e) {
