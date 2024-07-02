@@ -112,7 +112,7 @@ class TransactionController extends Controller
 			$transaction = Transaction::where("id", $request->transaction_id)->first();
 			if (!$transaction) throw new \Exception("Error, transaksi tidak ditemukan!");
 
-			$item = Checkout::where("transaction_id", $transaction->id)->where("product_id", $request->item_id)->first();
+			$item = Checkout::where("transaction_id", $transaction->id)->where("id", $request->item_id)->first();
 			if (!$item) throw new \Exception("Error, item tidak ditemukan!");
 
 			$transaction->grand_total = $transaction->grand_total - $item->total;
