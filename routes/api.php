@@ -57,6 +57,7 @@ Route::group(["middleware" => ["verify.request"]], function() {
 		Route::get("/outlet", [TransactionController::class, "getOutletTransaction"]);
 		Route::post("/check", [TransactionController::class, "checkTransaction"]);
 		Route::delete("/delete", [TransactionController::class, "deleteTransaction"]);
+		Route::delete("/item", [TransactionController::class, "deleteOrderInTransaction"]);
 	});
 
 	Route::group(["prefix" => "report", "middleware" => ["jwt.verify"]], function() {

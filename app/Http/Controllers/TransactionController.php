@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Checkout;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -98,6 +99,29 @@ class TransactionController extends Controller
 
 			DB::commit();
 			return response()->json(["message" => "Transaksi berhasil di hapus"]);
+		} catch (\Exception $e) {
+			DB::rollBack();
+			return response()->json(["message" => $e->getMessage()], 400);
+		}
+	}
+
+	public function deleteOrderInTransaction(Request $request) {
+		try {
+			DB::beginTransaction();
+
+			$transaction = Transaction::where("id", $request->transaction_id)->first();
+			if (!$transaction) throw new \Exception("Error, transaksi tidak ditemukan!");
+
+			$item = Checkout::where("transaction_id", $transaction->id)->where("product_id", $request->item_id)->first();
+			if (!$item) throw new \Exception("Error, item tidak ditemukan!");
+
+			$transaction->grand_total = $transaction->grand_total - $item->total;
+			$transaction->save();
+
+			$item->delete();
+
+			DB::commit();
+			return response()->json(["message" => "Item berhasil dihapus!"]);
 		} catch (\Exception $e) {
 			DB::rollBack();
 			return response()->json(["message" => $e->getMessage()], 400);
