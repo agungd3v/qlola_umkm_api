@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -24,6 +25,12 @@ class ReportController extends Controller
 		try {
 			$from = explode(" - ", $request->date)[0];
 			$to = explode(" - ", $request->date)[1];
+
+			if (isset($request->is_custom)) {
+				if ($request->is_custom) {
+					$to = Carbon::parse($to)->addDay(1)->format("Y-m-d");
+				}
+			}
 
 			if ($request->outlet == null) {
 				$transaction = Transaction::with("checkouts", "checkouts.product", "others")
