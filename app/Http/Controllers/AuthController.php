@@ -13,82 +13,179 @@ use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
-  public function signin(Request $request) {
+    public $user;
+
+    public function __construct(Request $request)
+    {
+        $this->middleware(function ($request, $next) {
+            $this->user = User::with("business")->where("id", Auth::id())->first();
+            return $next($request);
+        });
+    }
+
+    public function signin(Request $request)
+    {
+        try {
+            $this->validate($request, [
+                'phone' => 'required',
+                'password' => 'required',
+            ]);
+
+            $credentials = $request->only('phone', 'password');
+            if (!$token = JWTAuth::attempt($credentials)) {
+                throw new \Exception("Invalid phone number or password");
+            }
+
+            // Fetch the authenticated user
+            $user = Auth::user();
+
+            if (!$user) {
+                throw new \Exception("User not authenticated");
+            }
+
+            // Load user with business relationship
+            $user = User::with("business")->find($user->id);
+
+            // Ensure user has an associated business
+            if (!$user->business) {
+                throw new \Exception("User has no associated business");
+            }
+
+            // If the user has a 'karyawan' role, fetch outlets and products
+            if ($user->role == "karyawan") {
+                $outlet = $user->outlets()->with("business", "products")->first();
+                $user["outlet"] = $outlet;
+            }
+
+            return response()->json([
+                "user" => $user,
+                "token" => $token
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(["message" => $e->getMessage()], 400);
+        }
+    }
+
+    public function signup(Request $request)
+    {
+        try {
+            $this->validate($request, [
+                'name' => 'required',
+                'phone' => 'required',
+                'email' => 'required|email',
+                'password' => 'required|min:8',
+                'business_name' => 'required',
+            ]);
+
+            DB::beginTransaction();
+
+            $user = new User();
+            $user->name = $request->name;
+            $user->phone = $request->phone;
+            $user->email = $request->email;
+            $user->email_verified_at = Carbon::now();
+            $user->password = Hash::make($request->password);
+            $user->save();
+
+            $business = new Business();
+            $business->owner_id = $user->id;
+            $business->business_name = $request->business_name;
+            $business->business_type = $request->business_type;
+            $business->save();
+
+            DB::commit();
+            return response()->json(["message" => "Successfully registered"]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(["message" => $e->getMessage()], 400);
+        }
+    }
+
+    public function destroy()
+    {
+        auth()->logout(true);
+        return response()->json(['message' => 'Successfully logged out']);
+    }
+
+    public function refresh()
+    {
+        return response()->json([
+            'user' => Auth::user(),
+            'token' => JWTAuth::refresh()
+        ]);
+    }
+
+    public function check()
+    {
+        try {
+            $user = auth()->user();
+            return response()->json(["message" => "Validate user success"]);
+        } catch (\PHPOpenSourceSaver\JWTAuth\Exceptions\UserNotDefinedException $e) {
+            return response()->json(["message" => "Validate user failed"], 401);
+        }
+    }
+
+	public function addMitra(Request $request)
+	{
+		$this->validate($request, [
+			'name' => 'required',
+			'phone' => 'required',
+		]);
+	
+		DB::beginTransaction();
+	
 		try {
-			if (!$request->phone) throw new \Exception("No. Telepon tidak boleh kosong");
-			if (!$request->password) throw new \Exception("Password tidak boleh kosong");
-
-			$credentials = $request->only('phone', 'password');
-			$sign = JWTAuth::attempt($credentials);
-
-			if (!$sign) throw new \Exception("Password tidak benar");
-
-			$user = Auth::user();
-
-			if ($user->role == "karyawan") {
-				$outlet = User::find(Auth::user()->id)->outlets()->with("business", "products")->first();
-				$user["outlet"] = $outlet;
+			// Check if the user already exists with the same business_id and owner_id
+			$existingUser = User::where('business_id', $this->user->business->id)
+								->where('owner_id', $this->user->id)
+								->first();
+	
+			if ($existingUser) {
+				// If the user already exists with the same business_id and owner_id
+				throw new \Exception("This user already exists as an owner of the business");
 			}
-			return response()->json([
-				"user" => $user,
-				"token" => $sign
-			]);
-		} catch (\Exception $e) {
-			return response()->json(["message" => $e->getMessage()], 400);
-		}
-	}
-
-	public function signup(Request $request) {
-		try {
-			DB::beginTransaction();
-
-			if (!$request->name) throw new \Exception("Nama tidak boleh kosong");
-			if (!$request->phone) throw new \Exception("No. Telepon tidak boleh kosong");
-			if (!$request->email) throw new \Exception("Email tidak boleh kosong");
-			if (!$request->password) throw new \Exception("Password tidak boleh kosong");
-			if (strlen($request->password) < 8) throw new \Exception("Minimal panjang password 8 karakter");
-			if (!$request->business_name) throw new \Exception("Nama usaha boleh kosong");
-
+	
+			// Handle photo upload (if exists)
+			$fileName = null;
+			if ($request->hasFile('photo')) {
+				$image = time() . '.' . $request->photo->getClientOriginalExtension();
+				$request->file('photo')->move('mitra', $image);
+				$fileName = "mitra/" . $image;
+			}
+	
+			// Create a new mitra (user)
 			$user = new User();
 			$user->name = $request->name;
+			$user->photo = $fileName;
 			$user->phone = $request->phone;
 			$user->email = $request->email;
 			$user->email_verified_at = Carbon::now();
-			$user->password = Hash::make($request->password);
+			$user->password = Hash::make("12345678");  // Default password, can be updated later
+			$user->role = "mitra";
+	
+			// Ensure the user is associated with the business
+			$business = Business::find($this->user->business->id);
+			if (!$business) {
+				throw new \Exception("Business not found");
+			}
+			$user->business_id = $business->id;
+			$user->owner_id = $this->user->id;  // Assign the owner
+	
+			// Save the user
 			$user->save();
-
-			$business = new Business();
-			$business->owner_id = $user->id;
-			$business->business_name = $request->business_name;
-			$business->business_type = $request->business_type;
-			$business->save();
-
+	
+			// Attach the mitra (user) to the business' employees
+			$business->employees()->attach($user->id);
+	
 			DB::commit();
-			return response()->json(["message" => "Successfully register"]);
+			return response()->json([
+				"message" => "Successfully registered mitra",
+				"user" => $user
+			]);
 		} catch (\Exception $e) {
 			DB::rollBack();
 			return response()->json(["message" => $e->getMessage()], 400);
 		}
 	}
-
-	public function destroy() {
-		auth()->logout(true);
-		return response()->json(['message' => 'Successfully logged out']);
-	}
-
-	public function refresh() {
-		return response()->json([
-			'user' => Auth::user(),
-			'token' => JWTAuth::refresh()
-		]);
-	}
-
-	public function check() {
-		try {
-			$user = auth()->user();
-			return response()->json(["message" => "Validate user Success"]);
-		} catch (\PHPOpenSourceSaver\JWTAuth\Exceptions\UserNotDefinedException $e) {
-			return response()->json(["message" => "Validate user Failed"], 401);
-		}
-	}
+	
 }

@@ -33,6 +33,7 @@ Route::group(["middleware" => ["verify.request"]], function() {
 		Route::get("/products/{outlet_id}", [OutletController::class, "getOutletProduct"]);
 		Route::post("add-product", [OutletController::class, "addProduct"]);
 		Route::delete("remove-product", [OutletController::class, "removeProduct"]);
+		Route::post("add-mitra", [AuthController::class, "addMitra"]);
 	});
 
 	Route::group(["prefix" => "product", "middleware" => ["jwt.verify"]], function() {
