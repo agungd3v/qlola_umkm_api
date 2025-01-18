@@ -43,12 +43,12 @@ class AuthController extends Controller
                 throw new \Exception("User not authenticated");
             }
 
-            // Load user with business relationship
+            // Load user with business relationship, but make sure business can be null
             $user = User::with("business")->find($user->id);
 
-            // Ensure user has an associated business
-            if (!$user->business) {
-                throw new \Exception("User has no associated business");
+            // Check if the user has a business but don't throw an error if null
+            if ($user->business === null) {
+                $user->business = null;  // Make sure business is explicitly set to null if missing
             }
 
             // If the user has a 'karyawan' role, fetch outlets and products
@@ -125,67 +125,69 @@ class AuthController extends Controller
         }
     }
 
-	public function addMitra(Request $request)
-	{
-		$this->validate($request, [
-			'name' => 'required',
-			'phone' => 'required',
-		]);
-	
-		DB::beginTransaction();
-	
-		try {
-			// Check if the user already exists with the same business_id and owner_id
-			$existingUser = User::where('business_id', $this->user->business->id)
-								->where('owner_id', $this->user->id)
-								->first();
-	
-			if ($existingUser) {
-				// If the user already exists with the same business_id and owner_id
-				throw new \Exception("This user already exists as an owner of the business");
-			}
-	
-			// Handle photo upload (if exists)
-			$fileName = null;
-			if ($request->hasFile('photo')) {
-				$image = time() . '.' . $request->photo->getClientOriginalExtension();
-				$request->file('photo')->move('mitra', $image);
-				$fileName = "mitra/" . $image;
-			}
-	
-			// Create a new mitra (user)
-			$user = new User();
-			$user->name = $request->name;
-			$user->photo = $fileName;
-			$user->phone = $request->phone;
-			$user->email = $request->email;
-			$user->email_verified_at = Carbon::now();
-			$user->password = Hash::make("12345678");  // Default password, can be updated later
-			$user->role = "mitra";
-	
-			// Ensure the user is associated with the business
-			$business = Business::find($this->user->business->id);
-			if (!$business) {
-				throw new \Exception("Business not found");
-			}
-			$user->business_id = $business->id;
-			$user->owner_id = $this->user->id;  // Assign the owner
-	
-			// Save the user
-			$user->save();
-	
-			// Attach the mitra (user) to the business' employees
-			$business->employees()->attach($user->id);
-	
-			DB::commit();
-			return response()->json([
-				"message" => "Successfully registered mitra",
-				"user" => $user
-			]);
-		} catch (\Exception $e) {
-			DB::rollBack();
-			return response()->json(["message" => $e->getMessage()], 400);
-		}
-	}
-	
+    public function addMitra(Request $request)
+    {
+
+        $user = User::with("business")->where("id", Auth::id())->first();
+
+        $this->validate($request, [
+            'name' => 'required',
+            'phone' => 'required',
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            // Check if the user already exists with the same business_id and owner_id
+            $existingUser = User::where('business_id', $this->user->business->id)
+                ->where('owner_id', $this->user->id)
+                ->first();
+
+            if ($existingUser) {
+                // If the user already exists with the same business_id and owner_id
+                throw new \Exception("This user already exists as an owner of the business");
+            }
+
+            // Handle photo upload (if exists)
+            $fileName = null;
+            if ($request->hasFile('photo')) {
+                $image = time() . '.' . $request->photo->getClientOriginalExtension();
+                $request->file('photo')->move('mitra', $image);
+                $fileName = "mitra/" . $image;
+            }
+
+            // Create a new mitra (user)
+            $user = new User();
+            $user->name = $request->name;
+            $user->photo = $fileName;
+            $user->phone = $request->phone;
+            $user->email = $request->email;
+            $user->email_verified_at = Carbon::now();
+            $user->password = Hash::make("12345678");  // Default password, can be updated later
+            $user->role = "mitra";
+
+            // Ensure the user is associated with the business
+            $business = Business::find($this->user->business->id);
+            if (!$business) {
+                throw new \Exception("Business not found");
+            }
+            $user->business_id = $business->id;
+            $user->owner_id = $this->user->id;  // Assign the owner
+
+            // Save the user
+            $user->save();
+
+            // Attach the mitra (user) to the business' employees
+            $business->employees()->attach($user->id);
+
+            DB::commit();
+            return response()->json([
+                "message" => "Successfully registered mitra",
+                "user" => $user
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(["message" => $e->getMessage()], 400);
+        }
+    }
 }
