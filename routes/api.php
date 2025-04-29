@@ -7,6 +7,7 @@ use App\Http\Controllers\OutletController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TransactionController;
+use App\Models\Transaction;
 use Illuminate\Support\Facades\Route;
 
 
@@ -59,6 +60,7 @@ Route::group(["middleware" => ["verify.request"]], function() {
 		Route::post("/check", [TransactionController::class, "checkTransaction"]);
 		Route::delete("/delete", [TransactionController::class, "deleteTransaction"]);
 		Route::delete("/item", [TransactionController::class, "deleteOrderInTransaction"]);
+		Route::get("/daily", [TransactionController::class, "getDailyTransactionEmployee"]);
 	});
 
 	Route::group(["prefix" => "report", "middleware" => ["jwt.verify"]], function() {

@@ -46,7 +46,8 @@ class TransactionController extends Controller
 		}
 	}
 
-	public function getOutletTransaction() {
+	public function getOutletTransaction()
+	{
 		try {
 			$userRole = $this->user->role;
 			if ($userRole != "karyawan") throw new \Exception("Tidak ada transaksi");
@@ -68,7 +69,8 @@ class TransactionController extends Controller
 		}
 	}
 
-	public function checkTransaction(Request $request) {
+	public function checkTransaction(Request $request)
+	{
 		try {
 			$user = auth()->user();
 			if ($user->role !== "owner") throw new \Exception("Transaksi tidak ditemukan");
@@ -77,9 +79,9 @@ class TransactionController extends Controller
 			if (!$user->business) throw new \Exception("Transaksi tidak ditemukan");
 
 			$transaction = Transaction::where("transaction_code", $request->code)
-											->where("business_id", $user->business->id)
-											->with("checkouts", "others")
-											->first();
+				->where("business_id", $user->business->id)
+				->with("checkouts", "others")
+				->first();
 			if (!$transaction) throw new \Exception("Transaksi tidak ditemukan");
 
 			return response()->json(["data" => $transaction]);
@@ -88,7 +90,8 @@ class TransactionController extends Controller
 		}
 	}
 
-	public function deleteTransaction(Request $request) {
+	public function deleteTransaction(Request $request)
+	{
 		try {
 			DB::beginTransaction();
 
@@ -105,7 +108,8 @@ class TransactionController extends Controller
 		}
 	}
 
-	public function deleteOrderInTransaction(Request $request) {
+	public function deleteOrderInTransaction(Request $request)
+	{
 		try {
 			DB::beginTransaction();
 
@@ -130,5 +134,19 @@ class TransactionController extends Controller
 			DB::rollBack();
 			return response()->json(["message" => $e->getMessage()], 400);
 		}
+	}
+
+	public function getDailyTransactionEmployee()
+	{
+		$user = Auth::user();
+		// If the user has a 'karyawan' role, fetch outlets and products
+		if ($user->role == "karyawan") {
+			$outlet = User::find(Auth::user()->id)->outlets()->with("business", "products")->first();
+			$user["outlet"] = $outlet;
+		}
+
+		return response()->json([
+			"user" => $user,
+		]);
 	}
 }
