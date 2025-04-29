@@ -53,9 +53,9 @@ class AuthController extends Controller
 
             // If the user has a 'karyawan' role, fetch outlets and products
             if ($user->role == "karyawan") {
-                $outlet = $user->outlets()->with("business", "products")->first();
-                $user["outlet"] = $outlet;
-            }
+				$outlet = User::find(Auth::user()->id)->outlets()->with("business", "products")->first();
+				$user["outlet"] = $outlet;
+			}
 
             return response()->json([
                 "user" => $user,
