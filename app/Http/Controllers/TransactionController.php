@@ -29,17 +29,27 @@ class TransactionController extends Controller
 			$transactionToday = $this->user->business->transactions()
 				->whereDate("created_at", Carbon::today());
 
-			$transactionMonth = $this->user->business->transactions()
+			// $transactionMonth = $this->user->business->transactions()
+			// 	->whereYear("created_at", Carbon::now()->year)
+			// 	->whereMonth("created_at", Carbon::now()->month);
+
+			$transactionsMonth = $this->user->business->transactions()
 				->whereYear("created_at", Carbon::now()->year)
-				->whereMonth("created_at", Carbon::now()->month);
+				->whereMonth("created_at", Carbon::now()->month)
+				->with("checkouts.product", "checkouts.outlet", "others")
+				->orderBy("id", "desc")
+				->get();
 
 			return response()->json([
 				"transaction_nominal_today" => $transactionToday->sum("grand_total"),
 				"transaction_count_today" => $transactionToday->count(),
-				"daily_transactions" => $transactionToday->orderBy("id", "desc")->with("checkouts.product", "checkouts.outlet")->get(),
-				"transaction_nominal_month" => $transactionMonth->sum("grand_total"),
-				"transaction_count_month" => $transactionMonth->count(),
-				"monthly_transactions" => $transactionMonth->orderBy("id", "desc")->with("checkouts.product", "checkouts.outlet")->get()
+				"daily_transactions" => $transactionToday
+                ->orderBy("id", "desc")
+                ->with("checkouts.product", "checkouts.outlet", "others")
+                ->get(),				
+				"transaction_nominal_month" => $transactionsMonth->sum("grand_total"),
+				"transaction_count_month" => $transactionsMonth->count(),
+				"monthly_transactions" => $transactionsMonth
 			]);
 		} catch (\Exception $e) {
 			return response()->json(["message" => $e->getMessage()], 400);
@@ -54,11 +64,13 @@ class TransactionController extends Controller
 
 			$outlet = $this->user->outlets()->first();
 			if (!$outlet) throw new \Exception("Tidak ada transakksi");
-
+			
 			$transaction = Transaction::whereRelation("checkouts", "outlet_id", $outlet->id)
-				->where("business_id", $outlet->business->id)
-				->whereDate("created_at", Carbon::today());
-
+			->where("business_id", $outlet->business->id)
+			->whereDate("created_at", Carbon::today())
+			->orderBy("id", "desc")
+			->with("checkouts.product", "checkouts.outlet", "others");
+		
 			return response()->json([
 				"transaction_nominal_today" => $transaction->sum("grand_total"),
 				"transaction_count_today" => $transaction->count(),

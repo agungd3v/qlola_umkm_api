@@ -24,33 +24,62 @@ class CheckoutController extends Controller
 	public function transaction(Request $request) {
 		try {
 			DB::beginTransaction();
-
-			if (!$request->total || !$request->outlet_id || !$request->business_id || !$request->products || count($request->products) < 1) {
+	
+			if (
+				!$request->total || 
+				!$request->outlet_id || 
+				!$request->business_id || 
+				!$request->products || 
+				count($request->products) < 1
+			) {
 				throw new \Exception("Kesalahan, gagal memproses pesanan");
 			}
-
+	
 			$checkOutlet = $this->user->outlets()->first();
 			if (!$checkOutlet) throw new \Exception("Kesalahan, gagal memproses pesanan");
 			if ($checkOutlet->business_id != $request->business_id) throw new \Exception("Kesalahan, gagal memproses pesanan");
 			if ($checkOutlet->id != $request->outlet_id) throw new \Exception("Kesalahan, gagal memproses pesanan");
-
+	
 			$transaction = new Transaction();
-			$transaction->transaction_code = "TGA-". time() . rand(10, 99);
+			$transaction->transaction_code = "TGA-" . time() . rand(10, 99);
 			$transaction->business_id = $request->business_id;
-			$transaction->grand_total = $request->total;
+			$transaction->grand_total = 0; // akan dihitung di bawah
 			$transaction->save();
+	
+			$total = 0;
+	
+			foreach ($request->products as $product) {
+				if (isset($product['_other']) && $product['_other']) {
+					$other = new OtherProduct();
+					$other->transaction_id = $transaction->id;
+					$other->outlet_id = $product["_outletid"];
+					$other->product_name = $product["_productname"];
+					$other->product_price = $product["_productprice"];
+					$other->quantity = $product["_quantity"];
+					$other->total = $product["_total"];
+					$other->status = "paid";
+					$other->created_at = $product["_createdat"];
+					$other->updated_at = $product["_updatedat"];
+					$other->save();
 
-			for ($index = 0; $index < count($request->products); $index++) { 
-				$checkout = new Checkout();
-				$checkout->transaction_id = $transaction->id;
-				$checkout->outlet_id = $checkOutlet->id;
-				$checkout->product_id = $request->products[$index]["id"];
-				$checkout->quantity = $request->products[$index]["quantity"];
-				$checkout->total = floatval($request->products[$index]["product_price"]) * $request->products[$index]["quantity"];
-				$checkout->status = "paid";
-				$checkout->save();
+					$total += $other->total;
+				} else {
+					$checkout = new Checkout();
+					$checkout->transaction_id = $transaction->id;
+					$checkout->outlet_id = $checkOutlet->id;
+					$checkout->product_id = $product['id'];
+					$checkout->quantity = $product['quantity'];
+					$checkout->total = floatval($product['product_price']) * $product['quantity'];
+					$checkout->status = "paid";
+					$checkout->save();
+	
+					$total += $checkout->total;
+				}
 			}
-
+	
+			$transaction->grand_total = $total;
+			$transaction->save();
+	
 			DB::commit();
 			return response()->json(["message" => $transaction->transaction_code]);
 		} catch (\Exception $e) {
@@ -58,6 +87,8 @@ class CheckoutController extends Controller
 			return response()->json(["message" => $e->getMessage()], 400);
 		}
 	}
+	
+	
 
 	public function transactionBulk(Request $request) {
 		try {
