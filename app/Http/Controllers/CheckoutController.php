@@ -36,13 +36,14 @@ class CheckoutController extends Controller
 			}
 	
 			$checkOutlet = $this->user->outlets()->first();
-			if (!$checkOutlet) throw new \Exception("Kesalahan, gagal memproses pesanan");
-			if ($checkOutlet->business_id != $request->business_id) throw new \Exception("Kesalahan, gagal memproses pesanan");
-			if ($checkOutlet->id != $request->outlet_id) throw new \Exception("Kesalahan, gagal memproses pesanan");
+			if (!$checkOutlet) throw new \Exception("Kesalahan, outlet tidak ditemukan");
+			if ($checkOutlet->business_id != $request->business_id) throw new \Exception("Kesalahan, outlet tidak terdaftar pada bisnis ini");
+			if ($checkOutlet->id != $request->outlet_id) throw new \Exception("Kesalahan, user tidak berada di outlet ini");
 	
 			$transaction = new Transaction();
 			$transaction->transaction_code = "TGA-" . time() . rand(10, 99);
 			$transaction->business_id = $request->business_id;
+			$transaction->outlet_id = $request->outlet_id;
 			$transaction->grand_total = 0; // akan dihitung di bawah
 			$transaction->save();
 	
@@ -98,8 +99,9 @@ class CheckoutController extends Controller
 
 			foreach ($request->data as $key => $data) {
 				$transaction = new Transaction();
-				$transaction->transaction_code = "TGA-". auth()->user()->id . (time() . rand(10, 99)) + explode("_", $key)[1] * 2;
+				$transaction->transaction_code = "TGA-" . time() . rand(10, 99);
 				$transaction->business_id = $request->business_id;
+				$transaction->outlet_id = $request->outlet_id;
 				$transaction->grand_total = 0;
 				$transaction->created_at = $data[0]["_createdat"];
 				$transaction->save();

@@ -56,9 +56,12 @@ class TransactionController extends Controller
 		}
 	}
 
-	public function getOutletTransaction()
+	public function getOutletTransaction(Request $request)
 	{
 		try {
+			$status = $request->get("status");
+			// dd($status);
+
 			$userRole = $this->user->role;
 			if ($userRole != "karyawan") throw new \Exception("Tidak ada transaksi");
 
@@ -74,7 +77,10 @@ class TransactionController extends Controller
 			return response()->json([
 				"transaction_nominal_today" => $transaction->sum("grand_total"),
 				"transaction_count_today" => $transaction->count(),
-				"transactions" => $transaction->orderBy("id", "desc")->with("checkouts.product", "checkouts.outlet")->get()
+				"transactions" => $transaction->orderBy("id", "desc")->with("checkouts.product", "checkouts.outlet")->get(),
+				"transactions_pending" => $transaction->where("status", "=", "pending")->orderBy("id", "asc")->with("checkouts.product", "checkouts.outlet")->get(),
+				"transactions_success" => $transaction->where("status", "=", "success")->orderBy("id", "asc")->with("checkouts.product", "checkouts.outlet")->get(),
+				"transactions_void" => $transaction->where("status", "=", "void")->orderBy("id", "asc")->with("checkouts.product", "checkouts.outlet")->get()
 			]);
 		} catch (\Exception $e) {
 			return response()->json(["message" => $e->getMessage()], 400);

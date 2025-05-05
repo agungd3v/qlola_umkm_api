@@ -17,9 +17,13 @@ return new class extends Migration
 			$table->id();
 			$table->string("transaction_code")->unique();
 			$table->unsignedBigInteger("business_id");
-			// $table->unsignedBigInteger("outlet_id");
+			$table->unsignedBigInteger("outlet_id");
 			$table->integer("grand_total");
+			$table->enum("status", ["success", "void", "pending"])->default("pending");
 			$table->timestamps();
+
+			$table->foreign("business_id")->references("id")->on("businesses")->onUpdate("cascade")->onDelete("cascade");
+			$table->foreign("outlet_id")->references("id")->on("outlets")->onUpdate("cascade")->onDelete("cascade");
 		});
 	}
 

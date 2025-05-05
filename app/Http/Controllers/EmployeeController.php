@@ -46,7 +46,6 @@ class EmployeeController extends Controller
 				$fileName = "employees/" . $image;
 			}
 
-			
 			$user = new User();
 			$user->name = $request->name;
 			$user->photo = $fileName;
