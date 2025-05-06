@@ -61,6 +61,10 @@ Route::group(["middleware" => ["verify.request"]], function() {
 		Route::delete("/delete", [TransactionController::class, "deleteTransaction"]);
 		Route::delete("/item", [TransactionController::class, "deleteOrderInTransaction"]);
 		Route::get("/daily", [TransactionController::class, "getDailyTransactionEmployee"]);
+		Route::put("/cancel", [TransactionController::class, "cancelTransaction"]);
+		Route::put("/confirm", [TransactionController::class, "confirmTransaction"]);
+		Route::get("/summary/{type}", [TransactionController::class, "getOutletTransactionSummary"]);
+		Route::get("/part/{type}", [TransactionController::class, "getOutletTransactionPart"]);
 	});
 
 	Route::group(["prefix" => "report", "middleware" => ["jwt.verify"]], function() {

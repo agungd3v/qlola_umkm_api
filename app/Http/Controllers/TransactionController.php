@@ -56,12 +56,9 @@ class TransactionController extends Controller
 		}
 	}
 
-	public function getOutletTransaction(Request $request)
+	public function getOutletTransactionSummary(Request $request, $type)
 	{
 		try {
-			$status = $request->get("status");
-			// dd($status);
-
 			$userRole = $this->user->role;
 			if ($userRole != "karyawan") throw new \Exception("Tidak ada transaksi");
 
@@ -69,18 +66,57 @@ class TransactionController extends Controller
 			if (!$outlet) throw new \Exception("Tidak ada transakksi");
 			
 			$transaction = Transaction::whereRelation("checkouts", "outlet_id", $outlet->id)
-			->where("business_id", $outlet->business->id)
-			->whereDate("created_at", Carbon::today())
-			->orderBy("id", "desc")
-			->with("checkouts.product", "checkouts.outlet", "others");
-		
+				->where("business_id", $outlet->business->id)
+				->whereDate("created_at", Carbon::today());
+
 			return response()->json([
-				"transaction_nominal_today" => $transaction->sum("grand_total"),
-				"transaction_count_today" => $transaction->count(),
-				"transactions" => $transaction->orderBy("id", "desc")->with("checkouts.product", "checkouts.outlet")->get(),
-				"transactions_pending" => $transaction->where("status", "=", "pending")->orderBy("id", "asc")->with("checkouts.product", "checkouts.outlet")->get(),
-				"transactions_success" => $transaction->where("status", "=", "success")->orderBy("id", "asc")->with("checkouts.product", "checkouts.outlet")->get(),
-				"transactions_void" => $transaction->where("status", "=", "void")->orderBy("id", "asc")->with("checkouts.product", "checkouts.outlet")->get()
+				"status" => 200,
+				"data" => $transaction->where("status", "=", $type)->sum("grand_total")
+			]);
+		} catch (\Exception $e) {
+			return response()->json(["message" => $e->getMessage()], 400);
+		}
+	}
+
+	public function getOutletTransactionPart(Request $request, $type)
+	{
+		try {
+			$userRole = $this->user->role;
+			if ($userRole != "karyawan") throw new \Exception("Tidak ada transaksi");
+
+			$outlet = $this->user->outlets()->first();
+			if (!$outlet) throw new \Exception("Tidak ada transakksi");
+			
+			$transaction = Transaction::whereRelation("checkouts", "outlet_id", $outlet->id)
+				->where("business_id", $outlet->business->id)
+				->whereDate("created_at", Carbon::today())
+				->with("checkouts.product", "checkouts.outlet", "others");
+
+			return response()->json([
+				"status" => 200,
+				"data" => $transaction->where("status", "=", $type)->orderBy("id", "desc")->get()
+			]);
+		} catch (\Exception $e) {
+			return response()->json(["message" => $e->getMessage()], 400);
+		}
+	}
+
+	public function getOutletTransaction(Request $request)
+	{
+		try {
+			$userRole = $this->user->role;
+			if ($userRole != "karyawan") throw new \Exception("Tidak ada transaksi");
+
+			$outlet = $this->user->outlets()->first();
+			if (!$outlet) throw new \Exception("Tidak ada transakksi");
+			
+			$transaction = Transaction::whereRelation("checkouts", "outlet_id", $outlet->id)
+				->where("business_id", $outlet->business->id)
+				->whereDate("created_at", Carbon::today())
+				->with("checkouts.product", "checkouts.outlet", "others");
+
+			return response()->json([
+				"transactions" => $transaction->orderBy("id", "desc")->get()
 			]);
 		} catch (\Exception $e) {
 			return response()->json(["message" => $e->getMessage()], 400);
@@ -166,5 +202,56 @@ class TransactionController extends Controller
 		return response()->json([
 			"user" => $user,
 		]);
+	}
+
+	public function cancelTransaction(Request $request) {
+		try {
+			DB::beginTransaction();
+
+			$transaction = Transaction::where("id", $request->transaction_id)->first();
+			if (!$transaction) throw new \Exception("Error, transaction tidak ditemukan");
+
+			$transaction->status = "void";
+			$transaction->reason_void = $request->reason ?? NULL;
+			$transaction->save();
+
+			DB::commit();
+
+			return response()->json([
+				"status" => 200,
+				"message"=> "Success"
+			]);
+		} catch (\Exception $e) {
+			DB::rollBack();
+			return response()->json([
+				"status" => 400,
+				"message"=> $e->getMessage()
+			], 400);
+		}
+	}
+
+	public function confirmTransaction(Request $request) {
+		try {
+			DB::beginTransaction();
+
+			$transaction = Transaction::where("id", $request->transaction_id)->first();
+			if (!$transaction) throw new \Exception("Error, transaction tidak ditemukan");
+
+			$transaction->status = "success";
+			$transaction->save();
+
+			DB::commit();
+
+			return response()->json([
+				"status" => 200,
+				"message"=> "Success"
+			]);
+		} catch (\Exception $e) {
+			DB::rollBack();
+			return response()->json([
+				"status" => 400,
+				"message"=> $e->getMessage()
+			], 400);
+		}
 	}
 }
