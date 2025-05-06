@@ -94,7 +94,7 @@ class TransactionController extends Controller
 
 			return response()->json([
 				"status" => 200,
-				"data" => $transaction->where("status", "=", $type)->orderBy("id", "desc")->get()
+				"data" => $transaction->where("status", "=", $type)->orderBy("id", "asc")->get()
 			]);
 		} catch (\Exception $e) {
 			return response()->json(["message" => $e->getMessage()], 400);

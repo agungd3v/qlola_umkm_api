@@ -45,6 +45,7 @@ class CheckoutController extends Controller
 			$transaction->business_id = $request->business_id;
 			$transaction->outlet_id = $request->outlet_id;
 			$transaction->grand_total = 0; // akan dihitung di bawah
+			$transaction->ordering = $request->ordering;
 			$transaction->save();
 	
 			$total = 0;
