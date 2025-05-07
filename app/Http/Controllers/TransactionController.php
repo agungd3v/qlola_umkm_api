@@ -56,6 +56,47 @@ class TransactionController extends Controller
 		}
 	}
 
+	public function getOwnerTransactionSummary() {
+		try {
+			$userRole = $this->user->role;
+			if ($userRole != "owner") throw new \Exception("Tidak ada transaksi");
+
+			$trxPendingToday = $this->user->business->transactions()
+				->whereDate("created_at", Carbon::today())
+				->where("status", "=", "pending")
+				->sum("grand_total");
+
+			$trxSuccessToday = $this->user->business->transactions()
+				->whereDate("created_at", Carbon::today())
+				->where("status", "=", "success")
+				->sum("grand_total");
+
+			$trxVoidToday = $this->user->business->transactions()
+				->whereDate("created_at", Carbon::today())
+				->where("status", "=", "void")
+				->sum("grand_total");
+
+			$transactionsMonth = $this->user->business->transactions()
+				->whereYear("created_at", Carbon::now()->year)
+				->whereMonth("created_at", Carbon::now()->month)
+				->where("status", "=", "success")
+				->sum("grand_total");
+
+			return response()->json([
+				"status" => 200,
+				"transaction_pending_today" => floatval($trxPendingToday),
+				"transaction_success_today" => floatval($trxSuccessToday),
+				"transaction_void_today" => floatval($trxVoidToday),
+				"transaction_success_month" => floatval($transactionsMonth)
+			]);
+		} catch (\Exception $e) {
+			return response()->json([
+				"status" => 400,
+				"message" => $e->getMessage()
+			], 400);
+		}
+	}
+
 	public function getOutletTransactionSummary(Request $request, $type)
 	{
 		try {
@@ -74,7 +115,10 @@ class TransactionController extends Controller
 				"data" => $transaction->where("status", "=", $type)->sum("grand_total")
 			]);
 		} catch (\Exception $e) {
-			return response()->json(["message" => $e->getMessage()], 400);
+			return response()->json([
+				"status" => 400,
+				"message" => $e->getMessage()
+			], 400);
 		}
 	}
 
@@ -97,7 +141,10 @@ class TransactionController extends Controller
 				"data" => $transaction->where("status", "=", $type)->orderBy("id", "asc")->get()
 			]);
 		} catch (\Exception $e) {
-			return response()->json(["message" => $e->getMessage()], 400);
+			return response()->json([
+				"status" => 400,
+				"message" => $e->getMessage()
+			], 400);
 		}
 	}
 
@@ -116,10 +163,14 @@ class TransactionController extends Controller
 				->with("checkouts.product", "checkouts.outlet", "others");
 
 			return response()->json([
+				"status" => 200,
 				"transactions" => $transaction->orderBy("id", "desc")->get()
 			]);
 		} catch (\Exception $e) {
-			return response()->json(["message" => $e->getMessage()], 400);
+			return response()->json([
+				"status" => 400,
+				"message" => $e->getMessage()
+			], 400);
 		}
 	}
 
