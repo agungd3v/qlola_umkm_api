@@ -264,6 +264,7 @@ class TransactionController extends Controller
 
 			$transaction->status = "void";
 			$transaction->reason_void = $request->reason ?? NULL;
+			$transaction->void_from = Auth::user()->role;
 			$transaction->save();
 
 			DB::commit();
