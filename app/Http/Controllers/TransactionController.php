@@ -29,10 +29,6 @@ class TransactionController extends Controller
 			$transactionToday = $this->user->business->transactions()
 				->whereDate("created_at", Carbon::today());
 
-			// $transactionMonth = $this->user->business->transactions()
-			// 	->whereYear("created_at", Carbon::now()->year)
-			// 	->whereMonth("created_at", Carbon::now()->month);
-
 			$transactionsMonth = $this->user->business->transactions()
 				->whereYear("created_at", Carbon::now()->year)
 				->whereMonth("created_at", Carbon::now()->month)
@@ -43,10 +39,7 @@ class TransactionController extends Controller
 			return response()->json([
 				"transaction_nominal_today" => $transactionToday->sum("grand_total"),
 				"transaction_count_today" => $transactionToday->count(),
-				"daily_transactions" => $transactionToday
-                ->orderBy("id", "desc")
-                ->with("checkouts.product", "checkouts.outlet", "others")
-                ->get(),				
+				"daily_transactions" => $transactionToday->orderBy("id", "desc")->with("checkouts.product", "checkouts.outlet", "others")->get(),				
 				"transaction_nominal_month" => $transactionsMonth->sum("grand_total"),
 				"transaction_count_month" => $transactionsMonth->count(),
 				"monthly_transactions" => $transactionsMonth
@@ -88,6 +81,38 @@ class TransactionController extends Controller
 				"transaction_success_today" => floatval($trxSuccessToday),
 				"transaction_void_today" => floatval($trxVoidToday),
 				"transaction_success_month" => floatval($transactionsMonth)
+			]);
+		} catch (\Exception $e) {
+			return response()->json([
+				"status" => 400,
+				"message" => $e->getMessage()
+			], 400);
+		}
+	}
+
+	public function getOwnerTransactionSuccessAndPending() {
+		try {
+			$userRole = $this->user->role;
+			if ($userRole != "owner") throw new \Exception("Tidak ada transaksi");
+
+			$trxPendingToday = $this->user->business->transactions()
+				->whereDate("created_at", Carbon::today())
+				->where("status", "=", "pending")
+				->with("checkouts.product", "checkouts.outlet", "others")
+				->orderBy("id", "desc")
+				->get();
+
+			$trxSuccessToday = $this->user->business->transactions()
+				->whereDate("created_at", Carbon::today())
+				->where("status", "=", "success")
+				->with("checkouts.product", "checkouts.outlet", "others")
+				->orderBy("id", "desc")
+				->get();
+
+			return response()->json([
+				"status" => 200,
+				"transaction_pending_today" => $trxPendingToday,
+				"transaction_success_today" => $trxSuccessToday,
 			]);
 		} catch (\Exception $e) {
 			return response()->json([
@@ -264,7 +289,7 @@ class TransactionController extends Controller
 
 			$transaction->status = "void";
 			$transaction->reason_void = $request->reason ?? NULL;
-			$transaction->void_from = Auth::user()->role;
+			$transaction->from_void = Auth::user()->role;
 			$transaction->save();
 
 			DB::commit();

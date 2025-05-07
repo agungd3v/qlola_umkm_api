@@ -54,14 +54,12 @@ class CheckoutController extends Controller
 				if (isset($product['_other']) && $product['_other']) {
 					$other = new OtherProduct();
 					$other->transaction_id = $transaction->id;
-					$other->outlet_id = $product["_outletid"];
-					$other->product_name = $product["_productname"];
-					$other->product_price = $product["_productprice"];
-					$other->quantity = $product["_quantity"];
-					$other->total = $product["_total"];
+					$other->outlet_id = $checkOutlet->id;
+					$other->product_name = $product["product_name"];
+					$other->product_price = $product["product_price"];
+					$other->quantity = $product["quantity"];
+					$other->total = floatval($product['product_price']) * $product['quantity'];
 					$other->status = "paid";
-					$other->created_at = $product["_createdat"];
-					$other->updated_at = $product["_updatedat"];
 					$other->save();
 
 					$total += $other->total;
@@ -89,8 +87,6 @@ class CheckoutController extends Controller
 			return response()->json(["message" => $e->getMessage()], 400);
 		}
 	}
-	
-	
 
 	public function transactionBulk(Request $request) {
 		try {
